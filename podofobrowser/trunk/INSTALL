@@ -1,0 +1,8 @@
+
+To compile podofobrowser run the following commands:
+
+qmake
+make
+su
+make install
+
