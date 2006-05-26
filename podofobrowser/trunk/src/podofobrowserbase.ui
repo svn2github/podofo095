@@ -177,6 +177,17 @@
         <separator/>
         <action name="fileExitAction"/>
     </item>
+    <item text="&amp;Edit" name="Edit">
+        <action name="editCutAction"/>
+        <action name="editnew_itemAction"/>
+        <action name="editPasteAction"/>
+        <separator/>
+        <action name="editInsert_ObjectAction"/>
+        <action name="editInsert_KeyAction"/>
+        <separator/>
+        <action name="editDelete_ObjectAction"/>
+        <action name="editDelete_KeyAction"/>
+    </item>
     <item text="&amp;Tools" name="Tools">
         <action name="toolsConvert_to_HexstringAction"/>
         <action name="toolsConvert_from_HexstringAction"/>
@@ -370,6 +381,83 @@
             <string>Action</string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>editCutAction</cstring>
+        </property>
+        <property name="text">
+            <string>Cu&amp;t</string>
+        </property>
+        <property name="menuText">
+            <string>Cu&amp;t</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editnew_itemAction</cstring>
+        </property>
+        <property name="text">
+            <string>&amp;Copy</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Copy</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editPasteAction</cstring>
+        </property>
+        <property name="text">
+            <string>&amp;Paste</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Paste</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editInsert_ObjectAction</cstring>
+        </property>
+        <property name="text">
+            <string>Insert &amp;Object</string>
+        </property>
+        <property name="menuText">
+            <string>Insert &amp;Object</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editInsert_KeyAction</cstring>
+        </property>
+        <property name="text">
+            <string>Insert &amp;Key</string>
+        </property>
+        <property name="menuText">
+            <string>Insert &amp;Key</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editDelete_ObjectAction</cstring>
+        </property>
+        <property name="text">
+            <string>&amp;Delete Object</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Delete Object</string>
+        </property>
+    </action>
+    <action>
+        <property name="name">
+            <cstring>editDelete_KeyAction</cstring>
+        </property>
+        <property name="text">
+            <string>D&amp;elete Key</string>
+        </property>
+        <property name="menuText">
+            <string>D&amp;elete Key</string>
+        </property>
+    </action>
 </actions>
 <images>
     <image name="image0">
@@ -452,6 +540,30 @@
         <receiver>PoDoFoBrowserBase</receiver>
         <slot>toolsFromHex()</slot>
     </connection>
+    <connection>
+        <sender>editDelete_KeyAction</sender>
+        <signal>activated()</signal>
+        <receiver>PoDoFoBrowserBase</receiver>
+        <slot>editDeleteKey()</slot>
+    </connection>
+    <connection>
+        <sender>editDelete_ObjectAction</sender>
+        <signal>activated()</signal>
+        <receiver>PoDoFoBrowserBase</receiver>
+        <slot>editDeleteObject()</slot>
+    </connection>
+    <connection>
+        <sender>editInsert_KeyAction</sender>
+        <signal>activated()</signal>
+        <receiver>PoDoFoBrowserBase</receiver>
+        <slot>editInsertKey()</slot>
+    </connection>
+    <connection>
+        <sender>editInsert_ObjectAction</sender>
+        <signal>activated()</signal>
+        <receiver>PoDoFoBrowserBase</receiver>
+        <slot>editInsertObject()</slot>
+    </connection>
 </connections>
 <slots>
     <slot>fileNew()</slot>
@@ -465,6 +577,10 @@
     <slot>helpAbout()</slot>
     <slot>toolsToHex()</slot>
     <slot>toolsFromHex()</slot>
+    <slot>editInsertObject()</slot>
+    <slot>editInsertKey()</slot>
+    <slot>editDeleteObject()</slot>
+    <slot>editDeleteKey()</slot>
 </slots>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

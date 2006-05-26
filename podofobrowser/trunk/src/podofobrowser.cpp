@@ -56,6 +56,7 @@ private:
 PoDoFoBrowser::PoDoFoBrowser()
    : PoDoFoBrowserBase( 0, "PoDoFoBrowser", WDestructiveClose )
 {
+    m_writer     = new PdfWriter();
     m_parser     = new PdfParser();
 
     clear();
@@ -76,6 +77,7 @@ PoDoFoBrowser::~PoDoFoBrowser()
     saveConfig();
 
     delete m_parser;
+    delete m_writer;
 }
 
 void PoDoFoBrowser::loadConfig()
@@ -131,10 +133,19 @@ void PoDoFoBrowser::clear()
     textStream->clear();
 }
 
+void PoDoFoBrowser::fileNew()
+{
+   PdfError         eCode;
+
+   this->clear();
+   m_writer->Init( false );
+   loadObjects();
+
+}
+
 void PoDoFoBrowser::fileOpen( const QString & filename )
 {
     PdfError         eCode;
-    TCIVecObjects    it;
     QStringList      lst;
 
     clear();
@@ -153,17 +164,8 @@ void PoDoFoBrowser::fileOpen( const QString & filename )
     m_filename = filename;
     setCaption( m_filename );
 
-    it = m_parser->GetObjects().begin();
-    listObjects->setUpdatesEnabled( false );
-    while( it != m_parser->GetObjects().end() )
-    {
-        new PdfListViewItem( listObjects, *it );
-
-        ++it;
-    }
-    listObjects->setUpdatesEnabled( true );
-    
-    objectChanged( listObjects->firstChild() );
+    m_writer->Init( m_parser );
+    loadObjects();
 
     QApplication::restoreOverrideCursor();
     statusBar()->message(  QString( tr("Loaded file %1 successfully") ).arg( filename ), 2000 );
@@ -172,7 +174,6 @@ void PoDoFoBrowser::fileOpen( const QString & filename )
 void PoDoFoBrowser::fileSave( const QString & filename )
 {
     PdfError         eCode;
-    PdfWriter        writer;
 
     if( !saveObject() ) 
     {
@@ -187,15 +188,7 @@ void PoDoFoBrowser::fileSave( const QString & filename )
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
-    eCode = writer.Init( filename.latin1(), m_parser );
-    if( eCode.IsError() ) 
-    {
-        QApplication::restoreOverrideCursor();
-        podofoError( eCode );
-        return;
-    }
-
-    eCode = writer.Write();
+    eCode = m_writer->Write( filename.latin1() );
     if( eCode.IsError() ) 
     {
         QApplication::restoreOverrideCursor();
@@ -228,7 +221,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
         }
         return;
     }
-
+    
     m_pCurObject = object;
     if( !object->HasSingleValue() )
     {
@@ -361,7 +354,7 @@ void PoDoFoBrowser::podofoError( const PdfError & eCode )
     const char* pszMsg  = PdfError::ErrorMessage( eCode.Error() );
     const char* pszName = PdfError::ErrorName( eCode.Error() );
 
-    QString msg = QString( "PoDoFoBrowser encounter an error. Error: %1 %2\nError Description: %3\nError Source: %4:%5\n" 
+    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\nError Description: %3\nError Source: %4:%5\n" 
         ).arg( eCode.Error() ).arg( pszName ? pszName : "" ).arg( pszMsg ).arg( PdfError::Filename() ).arg( PdfError::Line() );
 
     QMessageBox::warning( this, tr("Error"), msg );
@@ -518,7 +511,8 @@ void PoDoFoBrowser::slotExportStream()
 
 void PoDoFoBrowser::toolsToHex()
 {
-    PdfError eCode;
+    PdfError       eCode;
+    PdfHexFilter   filter;
 
     char* pBuffer = NULL;
     long  lLen    = 0;
@@ -526,7 +520,7 @@ void PoDoFoBrowser::toolsToHex()
 
     if( QString::null != text ) 
     {
-        eCode = PdfAlgorithm::HexEncodeBuffer( text.latin1(), text.length(), &pBuffer, &lLen );
+        eCode = filter.Encode( text.latin1(), text.length(), &pBuffer, &lLen );
         if( eCode.IsError() )
         {
             podofoError( eCode );
@@ -540,7 +534,8 @@ void PoDoFoBrowser::toolsToHex()
 
 void PoDoFoBrowser::toolsFromHex()
 {
-    PdfError eCode;
+    PdfError       eCode;
+    PdfHexFilter   filter;
 
     char* pBuffer = NULL;
     long  lLen    = 0;
@@ -548,7 +543,7 @@ void PoDoFoBrowser::toolsFromHex()
 
     if( QString::null != text ) 
     {
-        eCode = PdfAlgorithm::HexDecodeBuffer( text.latin1(), text.length(), &pBuffer, &lLen );
+        eCode = filter.Decode( text.latin1(), text.length(), &pBuffer, &lLen );
         if( eCode.IsError() )
         {
             podofoError( eCode );
@@ -560,6 +555,92 @@ void PoDoFoBrowser::toolsFromHex()
     }
 }
 
+void PoDoFoBrowser::editInsertKey()
+{
+    if( m_pCurObject )
+    {
+        tableKeys->setNumRows( tableKeys->numRows() + 1 );
+        tableKeys->setCurrentCell( tableKeys->numRows(), 0 );
+        tableKeys->setFocus();
+    }
+}
+
+void PoDoFoBrowser::editInsertObject()
+{
+    PdfObject* pObject;
+
+    if( saveObject() )
+    {
+        pObject = m_writer->CreateObject();
+        listObjects->setCurrentItem( new PdfListViewItem( listObjects, pObject ) );
+    }
+}
+
+void PoDoFoBrowser::editDeleteKey()
+{
+    int cur = tableKeys->currentRow();
+
+    if( !m_pCurObject )
+        return;
+
+    if( QMessageBox::question( this, tr("Delete"), QString( tr("Do you really want to delete the key '%1'?") ).arg( 
+                               tableKeys->text( cur, 0 ) ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
+    {
+        tableKeys->removeRow( cur );
+    }
+}
+
+void PoDoFoBrowser::editDeleteObject()
+{
+    QListViewItem* item;
+    PdfObject*     pObj;
+    
+    item  = listObjects->currentItem();
+
+    if( !m_pCurObject && item )
+        return;
+
+    if( listObjects->currentItem()->parent() )
+    {
+        QMessageBox::information( this, tr("Delete"), tr("Deleting child objects is not yet supported." ) );
+        return;
+    }
+
+    if( QMessageBox::question( this, tr("Delete"), QString( tr("Do you really want to delete the object '%1'?") ).arg( 
+                               m_pCurObject->Reference().c_str() ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
+    {
+        pObj = m_writer->RemoveObject( m_pCurObject->ObjectNumber(), m_pCurObject->GenerationNumber() );
+        if( pObj ) 
+        {
+            delete pObj;
+
+            listObjects->takeItem( item );
+            delete item;
+        
+            m_pCurObject = NULL;
+
+            objectChanged( listObjects->currentItem() );
+        }
+    }
+}
+
+void PoDoFoBrowser::loadObjects()
+{
+    TCIVecObjects    it;
+
+    it = m_writer->GetObjects().begin();
+    listObjects->setUpdatesEnabled( false );
+    while( it != m_writer->GetObjects().end() )
+    {
+        new PdfListViewItem( listObjects, *it );
+
+        ++it;
+    }
+    listObjects->setUpdatesEnabled( true );
+
+    if( listObjects->firstChild() )
+        objectChanged( listObjects->firstChild() );
+}
 
     /*
 
@@ -570,6 +651,7 @@ void PoDoFoBrowser::slotFindObject()
     long          lObj  = 0;
     long          lGen  = 0;
     TCIVecObjects it;
+
 
     // ignore empty texts
     if( m_find->currentText().isEmpty() )

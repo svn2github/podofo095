@@ -38,6 +38,8 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     ~PoDoFoBrowser();
 
  private:
+    void fileNew();
+
     void fileOpen();
     void fileOpen( const QString & filename );
 
@@ -46,6 +48,12 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     void fileSaveAs();
 
     void fileExit();
+
+    void editInsertKey();
+    void editInsertObject();
+
+    void editDeleteKey();
+    void editDeleteObject();
 
     void toolsToHex();
     void toolsFromHex();
@@ -68,10 +76,14 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     void slotExportStream();
 
  private:
+    void loadObjects();
+
+ private:
 
     QListViewItem*        m_lastItem;
     QString               m_filename;
     PoDoFo::PdfParser*    m_parser;
+    PoDoFo::PdfWriter*    m_writer;
     PoDoFo::PdfObject*    m_pCurObject;
 
     bool                  m_bEditableStream;
