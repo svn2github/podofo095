@@ -4,7 +4,8 @@ SOURCES += main.cpp \
            pdflistviewitem.cpp
 HEADERS += podofobrowser.h \
            pdflistviewitem.h
-FORMS   += podofobrowserbase.ui
+FORMS   += podofobrowserbase.ui podofoaboutdlg.ui
+
 TEMPLATE = app
 CONFIG += debug \
           warn_on \

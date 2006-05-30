@@ -193,9 +193,6 @@
         <action name="toolsConvert_from_HexstringAction"/>
     </item>
     <item text="&amp;Help" name="helpMenu">
-        <action name="helpContentsAction"/>
-        <action name="helpIndexAction"/>
-        <separator/>
         <action name="helpAboutAction"/>
     </item>
 </menubar>
@@ -568,8 +565,8 @@
 <slots>
     <slot>fileNew()</slot>
     <slot>fileOpen()</slot>
-    <slot>fileSave()</slot>
-    <slot>fileSaveAs()</slot>
+    <slot returnType="bool">fileSave()</slot>
+    <slot returnType="bool">fileSaveAs()</slot>
     <slot>filePrint()</slot>
     <slot>fileExit()</slot>
     <slot>helpIndex()</slot>

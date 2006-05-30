@@ -43,9 +43,9 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     void fileOpen();
     void fileOpen( const QString & filename );
 
-    void fileSave();
-    void fileSave( const QString & filename );
-    void fileSaveAs();
+    bool fileSave();
+    bool fileSave( const QString & filename );
+    bool fileSaveAs();
 
     void fileExit();
 
@@ -70,6 +70,8 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
 
     void streamChanged( PoDoFo::PdfObject* );
 
+    void helpAbout();
+
  private slots:
     void objectChanged( QListViewItem* );
     void slotImportStream();
@@ -77,6 +79,7 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
 
  private:
     void loadObjects();
+    bool trySave();
 
  private:
 
@@ -87,6 +90,7 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     PoDoFo::PdfObject*    m_pCurObject;
 
     bool                  m_bEditableStream;
+    bool                  m_bChanged;
 };
 
 

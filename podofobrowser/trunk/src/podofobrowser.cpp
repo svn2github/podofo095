@@ -21,6 +21,7 @@
 
 #include "podofobrowser.h"
 #include "pdflistviewitem.h"
+#include "podofoaboutdlg.h"
 
 #include <qapplication.h>
 #include <qcursor.h>
@@ -127,6 +128,7 @@ void PoDoFoBrowser::clear()
     m_pCurObject      = NULL;
     m_lastItem        = NULL;
     m_bEditableStream = false;
+    m_bChanged        = false;
 
     listObjects->clear();
     tableKeys->setNumRows( 0 );
@@ -136,6 +138,9 @@ void PoDoFoBrowser::clear()
 void PoDoFoBrowser::fileNew()
 {
    PdfError         eCode;
+
+   if( !trySave() ) 
+       return;
 
    this->clear();
    m_writer->Init( false );
@@ -171,7 +176,7 @@ void PoDoFoBrowser::fileOpen( const QString & filename )
     statusBar()->message(  QString( tr("Loaded file %1 successfully") ).arg( filename ), 2000 );
 }
 
-void PoDoFoBrowser::fileSave( const QString & filename )
+bool PoDoFoBrowser::fileSave( const QString & filename )
 {
     PdfError         eCode;
 
@@ -183,7 +188,7 @@ void PoDoFoBrowser::fileSave( const QString & filename )
             listObjects->setCurrentItem( m_lastItem );
             listObjects->blockSignals( false );
         }
-        return;
+        return false;
     }
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
@@ -193,7 +198,7 @@ void PoDoFoBrowser::fileSave( const QString & filename )
     {
         QApplication::restoreOverrideCursor();
         podofoError( eCode );
-        return;
+        return false;
     }
 
     QApplication::restoreOverrideCursor();
@@ -201,6 +206,8 @@ void PoDoFoBrowser::fileSave( const QString & filename )
 
     m_filename = filename;
     setCaption( m_filename );
+
+    return true;
 }
 
 void PoDoFoBrowser::objectChanged( QListViewItem* item )
@@ -324,28 +331,36 @@ void PoDoFoBrowser::streamChanged( PdfObject* object )
 
 void PoDoFoBrowser::fileOpen()
 {
+   if( !trySave() ) 
+       return;
+
     QString filename = QFileDialog::getOpenFileName( QString::null, tr("PDF File (*.pdf)"), this );
     if( !filename.isNull() )
         fileOpen( filename );
 }
 
-void PoDoFoBrowser::fileSave()
+bool PoDoFoBrowser::fileSave()
 {
     if( m_filename.isEmpty() )
-        fileSaveAs();
+        return fileSaveAs();
     else
-        fileSave( m_filename );
+        return fileSave( m_filename );
 }
 
-void PoDoFoBrowser::fileSaveAs()
+bool PoDoFoBrowser::fileSaveAs()
 {
     QString filename = QFileDialog::getSaveFileName( QString::null, tr("PDF File (*.pdf)"), this );
     if( !filename.isNull() )
-        fileSave( filename );
+        return fileSave( filename );
+    else
+        return false;
 }
 
 void PoDoFoBrowser::fileExit()
 {
+   if( !trySave() ) 
+       return;
+
     this->close();
 }
 
@@ -428,6 +443,7 @@ bool PoDoFoBrowser::saveObject()
         statusBar()->message( tr("Stream data saved"), 2000 );
     }
 
+    m_bChanged = true;
     return true;
 }
 
@@ -562,6 +578,8 @@ void PoDoFoBrowser::editInsertKey()
         tableKeys->setNumRows( tableKeys->numRows() + 1 );
         tableKeys->setCurrentCell( tableKeys->numRows(), 0 );
         tableKeys->setFocus();
+
+        m_bChanged = true;
     }
 }
 
@@ -573,6 +591,8 @@ void PoDoFoBrowser::editInsertObject()
     {
         pObject = m_writer->CreateObject();
         listObjects->setCurrentItem( new PdfListViewItem( listObjects, pObject ) );
+
+        m_bChanged = true;
     }
 }
 
@@ -587,6 +607,7 @@ void PoDoFoBrowser::editDeleteKey()
                                tableKeys->text( cur, 0 ) ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
     {
         tableKeys->removeRow( cur );
+        m_bChanged = true;
     }
 }
 
@@ -621,6 +642,8 @@ void PoDoFoBrowser::editDeleteObject()
 
             objectChanged( listObjects->currentItem() );
         }
+
+        m_bChanged = true;
     }
 }
 
@@ -641,6 +664,37 @@ void PoDoFoBrowser::loadObjects()
     if( listObjects->firstChild() )
         objectChanged( listObjects->firstChild() );
 }
+
+void PoDoFoBrowser::helpAbout()
+{
+    PodofoAboutDlg* dlg = new PodofoAboutDlg( this );
+    dlg->show();
+}
+
+bool PoDoFoBrowser::trySave() 
+{
+   if( m_bChanged ) 
+   {
+       int m = QMessageBox::question( this, tr("File changed"), QString( tr("The file %1 was changed. Do you want to save it?") ).arg( m_filename ), 
+                                  QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel );
+       
+       if( m == QMessageBox::Cancel )
+           return false;
+       else if( m == QMessageBox::Yes ) 
+       {
+           if( m_filename.isEmpty() )
+               return fileSaveAs();
+           else
+               fileSave( m_filename );
+       }
+       else 
+           return true;
+   }
+
+   return true;
+}
+
+
 
     /*
 
