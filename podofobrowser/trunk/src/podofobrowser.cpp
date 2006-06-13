@@ -369,8 +369,14 @@ void PoDoFoBrowser::podofoError( const PdfError & eCode )
     const char* pszMsg  = PdfError::ErrorMessage( eCode.Error() );
     const char* pszName = PdfError::ErrorName( eCode.Error() );
 
-    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\nError Description: %3\nError Source: %4:%5\n" 
-        ).arg( eCode.Error() ).arg( pszName ? pszName : "" ).arg( pszMsg ).arg( PdfError::Filename() ).arg( PdfError::Line() );
+    QString info = PdfError::Information();
+    if( !info.isEmpty() )
+    {
+        info = QString("Information: ") + info;
+    }
+
+    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\n%3Error Description: %4\nError Source: %5:%6\n" 
+        ).arg( eCode.Error() ).arg( pszName ? pszName : "" ).arg( info ).arg( pszMsg ).arg( PdfError::Filename() ).arg( PdfError::Line() );
 
     QMessageBox::warning( this, tr("Error"), msg );
 }
@@ -406,6 +412,8 @@ bool PoDoFoBrowser::saveObject()
 
             if( eCode.IsError() )
             {
+                QString msg = QString("\"%1\" is no valid PDF datatype.\n").arg( pszText );
+                eCode.SetErrorInformation( msg.latin1() );
                 podofoError( eCode );
                 return false;
             }
@@ -696,253 +704,3 @@ bool PoDoFoBrowser::trySave()
 
 
 
-    /*
-
-void PoDoFoBrowser::slotFindObject()
-{
-    PdfError      eCode;
-    PdfVariant    var;
-    long          lObj  = 0;
-    long          lGen  = 0;
-    TCIVecObjects it;
-
-
-    // ignore empty texts
-    if( m_find->currentText().isEmpty() )
-        return;
-
-    eCode = var.Init( m_find->currentText().latin1() );
-    if( !eCode.IsError() )
-    {
-        if( var.GetDataType() == ePdfDataType_Reference )
-            var.GetReference( &lObj, &lGen );
-        else if( var.GetDataType() == ePdfDataType_Number )
-            var.GetNumber( &lObj );
-
-        it = std::find_if( m_parser->GetObjects().begin(), m_parser->GetObjects().end(), ObjectsComperator( lObj, lGen ) );
-    }
-    else
-    {
-        podofoError( eCode );
-        return;
-    }
-
-    if( it == m_parser->GetObjects().end() )
-    {
-        m_pCurObject = NULL;
-        QMessageBox::critical( this, tr("Object not found"), QString( tr("No object %1 was found!") ).arg( m_find->currentText() ) );
-    }
-    else
-    {
-        if( m_pCurObject == NULL || applyChangesToObject() )
-        {
-            m_pCurObject = (*it);
-            updateCurrentItem();
-        }
-    }
-}
-    */
-
-#if 0
-
-void PoDoFoBrowser::updateCurrentItem()
-{
-    TCIVecObjects it;
-
-    m_list->clear();
-
-    if( m_pCurObject )
-    {
-        m_list->blockSignals( true );
-        new PdfListViewItem( m_list, m_pCurObject );
-        m_list->blockSignals( false );
-        m_list->setSelected( m_list->firstChild(), true );
-
-        /*
-        m_prev->setEnabled( m_cur_it != m_parser->GetObjects().begin() );
-        m_next->setEnabled( m_cur_it != it );
-        */
-
-        m_find->setCurrentText( QString( m_pCurObject->Reference() ) );
-    }
-
-    m_last_obj = NULL;
-}
-
-void PoDoFoBrowser::objectChanged( QListViewItem* item )
-{
-/*    
-    PdfError         eCode;
-    const PdfObject* object;
-    TCIKeyMap        it;
-    int              i     = 0;
-    std::string      str;
-    char*            pBuf;
-    long             lLen;
-    QByteArray       data;
-
-    if( m_last_obj )
-    {
-        if( !applyChangesToObject( static_cast<PdfListViewItem*>(m_last_obj)->object() ) )
-        {
-            m_list->blockSignals( true );
-            m_list->setCurrentItem( m_last_obj );
-            m_list->blockSignals( false );
-            return;
-        }
-    }
-
-    m_table->setNumRows( 0 );
-    m_edit->setText( QString::null );
-
-    if( item && static_cast<PdfListViewItem*>(item) && static_cast<PdfListViewItem*>(item)->object() )
-    {
-        object = static_cast<PdfListViewItem*>(item)->object();
-        it     = object->GetKeys().begin();
-            
-        m_table->setNumRows( object->GetKeys().size() );
-
-        if( !object->HasSingleValue() )
-        {
-            m_stack->raiseWidget( m_table );
-
-            while( it != object->GetKeys().end() )
-            {
-                eCode = (*it).second.ToString( str );
-                if( eCode.IsError() ) 
-                {
-                    podofoError( eCode );
-                    break;
-                }
-                
-                m_table->setText( i, 0, QString( (*it).first ) );
-                m_table->setText( i, 1, QString( str ) );
-                
-                ++i;
-                ++it;
-            }
-        }
-        else
-        {
-            m_stack->raiseWidget( m_sbox );
-
-            m_single->setText( object->GetSingleValueString() );
-        }
-
-        if( object->HasStream() )
-        {
-            eCode = object->Stream()->GetFilteredCopy( &pBuf, &lLen );
-            if( eCode.IsError() )
-            {
-                statusBar()->message( tr("Cannot apply filters to this stream!"), 2000 );
-                podofoError( eCode );
-            }
-            else
-            { 
-                if( lLen != qstrlen( pBuf ) )
-                    statusBar()->message( tr("Stream contains binary data and is not shown completely!"), 2000 );
-
-                data.assign( pBuf, lLen );
-                m_edit->setText( QString( data ) );
-            }
-        }
-        else
-            m_edit->setText( tr("This object does not have a stream!" ) );
-    }
-    
-    m_last_obj = item;
-*/
-}
-
-void PoDoFoBrowser::slotNext()
-{
-    /*
-    if( applyChangesToObject() )
-    {
-        //++m_cur_it;
-        updateCurrentItem();
-    }
-    */
-}
-
-void PoDoFoBrowser::slotPrev()
-{
-    /*
-    if( applyChangesToObject() )
-    {
-        //--m_cur_it;
-        updateCurrentItem();
-    }
-    */
-}
-
-bool PoDoFoBrowser::applyChangesToObject()
-{
-    /*
-    if( m_filename.isEmpty() )
-        return true;
-    
-    if( m_pCurObject == NULL )
-        return false;
-    else
-        return applyChangesToObject( m_pCurObject );
-    */
-}
-
-bool PoDoFoBrowser::applyChangesToObject( PdfObject* object )
-{
-    /*
-    PdfError      eCode;
-    PdfVariant    var;
-    int           i;
-    const char*   pszText;
-
-    if( !object )
-        return true;
-
-    if( object->HasSingleValue() && m_single->isModified() )
-    {
-        eCode = var.Init( m_single->text().latin1() );
-        if( !eCode.IsError() )
-            object->SetSingleValue( m_single->text().latin1() );
-        else
-        {        
-            podofoError( eCode );
-            return false;
-        }
-    }
-    else
-    {
-        // first check wether all keys are valid
-        for( i=0;i<m_table->numRows();i++ )
-        {
-            pszText = m_table->text( i, 0 ).latin1();
-            eCode = var.Init( pszText );
-
-            if( !eCode.IsError() )
-            {
-                pszText = m_table->text( i, 1 ).latin1();
-                eCode = var.Init( pszText );
-            }
-            else
-            {
-                podofoError( eCode );
-                return false;
-            }
-        }
-
-        // clear the key map
-        object->ClearKeys();
-
-        // first check wether all keys are valid
-        for( i=0;i<m_table->numRows();i++ )
-        {
-            eCode = var.Init( m_table->text( i, 1 ).latin1() );
-            object->AddKey( QString( m_table->text( i, 0 ) ), var );
-        }
-    }
-
-    return true;
-    */
-}
-#endif // 0
