@@ -636,9 +636,9 @@ void PoDoFoBrowser::editDeleteObject()
     }
 
     if( QMessageBox::question( this, tr("Delete"), QString( tr("Do you really want to delete the object '%1'?") ).arg( 
-                               m_pCurObject->Reference().c_str() ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
+                               m_pCurObject->Reference().ToString().c_str() ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
     {
-        pObj = m_writer->RemoveObject( m_pCurObject->ObjectNumber(), m_pCurObject->GenerationNumber() );
+        pObj = m_writer->RemoveObject( PdfReference( m_pCurObject->ObjectNumber(), m_pCurObject->GenerationNumber() ) );
         if( pObj ) 
         {
             delete pObj;
