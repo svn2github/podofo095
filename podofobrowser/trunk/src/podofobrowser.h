@@ -76,10 +76,12 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     void objectChanged( QListViewItem* );
     void slotImportStream();
     void slotExportStream();
+    void slotTableChanged();
 
  private:
     void loadObjects();
     bool trySave();
+    void copyToWriter();
 
  private:
 
@@ -91,6 +93,7 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
 
     bool                  m_bEditableStream;
     bool                  m_bChanged;
+    bool                  m_bObjectChanged;
 };
 
 

@@ -27,23 +27,16 @@
 PdfListViewItem::PdfListViewItem( QListView* parent, PoDoFo::PdfObject* object )
     : QListViewItem( parent, parent->lastItem() ), m_pObject( object )
 {
-    PoDoFo::PdfVariant var;
-    std::string        str;
-
-    if( !m_pObject->GetKeyValueVariant( PoDoFo::PdfName::KeyType, var ).IsError() )
-    {
-        if( !var.ToString( str ).IsError() )
-            m_sName = str;
-    }
-        
-    init();
+    m_sText = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
+    setText( 0, m_sText + m_sType );
 }
 
 PdfListViewItem::PdfListViewItem( QListViewItem* parent, PoDoFo::PdfObject* object, const QString & key )
     : QListViewItem( parent ), m_pObject( object )
 {
-    m_sName = key;
-    init();
+    m_sText = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
+    m_sType = key;
+    setText( 0, m_sText + m_sType );
 }
  
 PdfListViewItem::~PdfListViewItem()
@@ -53,9 +46,16 @@ PdfListViewItem::~PdfListViewItem()
 void PdfListViewItem::init()
 {
     PoDoFo::TCIObjKeyMap itObjs;
-    QString text = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
+    PoDoFo::PdfVariant   var;
+    std::string          str;
 
-    setText( 0, text + m_sName );
+    if( m_sType.isEmpty() && !m_pObject->GetKeyValueVariant( PoDoFo::PdfName::KeyType, var ).IsError() )
+    {
+        if( !var.ToString( str ).IsError() )
+            m_sType = str;
+    }
+
+    setText( 0, m_sText + m_sType );
 
     if( m_pObject->GetObjectKeys().size() )
     {

@@ -37,12 +37,12 @@ class PdfListViewItem : public QListViewItem {
 
     int compare( QListViewItem* i, int col, bool ascending ) const;
 
- private:
     void init();
 
  private:
     PoDoFo::PdfObject* m_pObject;
-    QString            m_sName;
+    QString            m_sText;
+    QString            m_sType;
 };
 
 PoDoFo::PdfObject* PdfListViewItem::object() const
