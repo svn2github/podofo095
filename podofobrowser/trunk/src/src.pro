@@ -14,3 +14,10 @@ CONFIG += debug \
 TARGET = ../bin/podofobrowser
 INCLUDEPATH = /usr/include/fontconfig/ /usr/include/freetype2/
 LIBS = -lpodofo
+
+browser.path = /usr/local/bin/
+browser.files = ../bin/podofobrowser
+
+INSTALLS += browser
+
+
