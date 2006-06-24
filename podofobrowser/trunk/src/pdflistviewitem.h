@@ -43,6 +43,8 @@ class PdfListViewItem : public QListViewItem {
     PoDoFo::PdfObject* m_pObject;
     QString            m_sText;
     QString            m_sType;
+
+    bool               m_bInitialized;
 };
 
 PoDoFo::PdfObject* PdfListViewItem::object() const

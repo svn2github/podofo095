@@ -426,7 +426,7 @@ bool PoDoFoBrowser::saveObject()
 
 
             pszText = tableKeys->text( i, 1 ).latin1();
-            eCode = var.Init( pszText );
+            eCode = var.Parse( pszText );
 
             if( eCode.IsError() )
             {
@@ -443,14 +443,14 @@ bool PoDoFoBrowser::saveObject()
         // first check wether all keys are valid
         for( i=0;i<tableKeys->numRows();i++ )
         {
-            eCode = var.Init( tableKeys->text( i, 1 ).latin1() );
-            m_pCurObject->AddKey( PdfName( tableKeys->text( i, 0 ) ), var );
+            eCode = var.Parse( tableKeys->text( i, 1 ).latin1() );
+            m_pCurObject->AddKey( PdfName( tableKeys->text( i, 0 ).latin1() ), var );
         }
     }
     else
     {
         pszText = tableKeys->text( 0, 0 ).latin1();
-        eCode = var.Init( pszText );
+        eCode = var.Parse( pszText );
         
         if( eCode.IsError() )
         {
@@ -634,7 +634,7 @@ void PoDoFoBrowser::editInsertObject()
             copyToWriter();
         }
 
-        pObject = m_writer->CreateObject();
+        pObject = m_writer->GetObjects().CreateObject();
         listObjects->setCurrentItem( new PdfListViewItem( listObjects, pObject ) );
 
         m_bObjectChanged = true;
@@ -712,6 +712,7 @@ void PoDoFoBrowser::loadObjects()
 
     it = vec.begin();
     listObjects->setUpdatesEnabled( false );
+    listObjects->viewport()->setUpdatesEnabled( false );
     listObjects->clear();
     while( it != vec.end() )
     {
@@ -728,7 +729,10 @@ void PoDoFoBrowser::loadObjects()
         ++i;
         ++it;
     }
+    listObjects->viewport()->setUpdatesEnabled( true );
     listObjects->setUpdatesEnabled( true );
+    listObjects->viewport()->update();
+    listObjects->update();
 
     if( listObjects->firstChild() )
         objectChanged( listObjects->firstChild() );

@@ -25,14 +25,15 @@
 #include <string>
 
 PdfListViewItem::PdfListViewItem( QListView* parent, PoDoFo::PdfObject* object )
-    : QListViewItem( parent, parent->lastItem() ), m_pObject( object )
+    : QListViewItem( parent, parent->lastItem() ), m_pObject( object ), m_bInitialized( false )
 {
     m_sText = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
+    m_sType = "";
     setText( 0, m_sText + m_sType );
 }
 
 PdfListViewItem::PdfListViewItem( QListViewItem* parent, PoDoFo::PdfObject* object, const QString & key )
-    : QListViewItem( parent ), m_pObject( object )
+    : QListViewItem( parent ), m_pObject( object ), m_bInitialized( false )
 {
     m_sText = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
     m_sType = key;
@@ -45,15 +46,24 @@ PdfListViewItem::~PdfListViewItem()
 
 void PdfListViewItem::init()
 {
+    PoDoFo::PdfError     eCode;
     PoDoFo::TCIObjKeyMap itObjs;
     PoDoFo::PdfVariant   var;
+    PdfListViewItem*     child;
     std::string          str;
 
-    if( m_sType.isEmpty() && !m_pObject->GetKeyValueVariant( PoDoFo::PdfName::KeyType, var ).IsError() )
+    if( m_bInitialized ) 
+        return;
+
+    if( m_sType.isEmpty() && m_pObject->HasKey( PoDoFo::PdfName::KeyType ) )
     {
-        if( !var.ToString( str ).IsError() )
+        eCode = m_pObject->GetKeyValueVariant( PoDoFo::PdfName::KeyType, var );
+        if( !eCode.IsError() && !(eCode = var.ToString( str )).IsError() )
             m_sType = str;
     }
+
+    if( eCode.IsError() )
+        eCode.PrintErrorMsg();
 
     setText( 0, m_sText + m_sType );
 
@@ -64,10 +74,13 @@ void PdfListViewItem::init()
         itObjs = m_pObject->GetObjectKeys().begin();
         while( itObjs != m_pObject->GetObjectKeys().end() )
         {
-            new PdfListViewItem( this, (*itObjs).second, QString( (*itObjs).first.Name() ) );
+            child = new PdfListViewItem( this, (*itObjs).second, QString( (*itObjs).first.Name().c_str() ) );
+            child->init();
             ++itObjs;
         }
     }
+
+    m_bInitialized = true;
 }
 
 int PdfListViewItem::compare( QListViewItem* i, int col, bool ascending ) const
