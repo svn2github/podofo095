@@ -58,6 +58,8 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     void toolsToHex();
     void toolsFromHex();
 
+    void loadAllObjects();
+
     void loadConfig();
     void saveConfig();
 

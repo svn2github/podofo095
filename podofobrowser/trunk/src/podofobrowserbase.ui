@@ -187,6 +187,8 @@
         <separator/>
         <action name="editDelete_ObjectAction"/>
         <action name="editDelete_KeyAction"/>
+        <separator/>
+        <action name="editLoad_all_objectsAction"/>
     </item>
     <item text="&amp;Tools" name="Tools">
         <action name="toolsConvert_to_HexstringAction"/>
@@ -455,6 +457,20 @@
             <string>D&amp;elete Key</string>
         </property>
     </action>
+    <action>
+        <property name="name">
+            <cstring>editLoad_all_objectsAction</cstring>
+        </property>
+        <property name="text">
+            <string>&amp;Load all objects</string>
+        </property>
+        <property name="menuText">
+            <string>&amp;Load all objects</string>
+        </property>
+        <property name="toolTip">
+            <string>Objects are loaded on demand from the PDF file. This action will load all objects immediately which can take some time.</string>
+        </property>
+    </action>
 </actions>
 <images>
     <image name="image0">
@@ -561,6 +577,12 @@
         <receiver>PoDoFoBrowserBase</receiver>
         <slot>editInsertObject()</slot>
     </connection>
+    <connection>
+        <sender>editLoad_all_objectsAction</sender>
+        <signal>activated()</signal>
+        <receiver>PoDoFoBrowserBase</receiver>
+        <slot>loadAllObjects()</slot>
+    </connection>
 </connections>
 <slots>
     <slot>fileNew()</slot>
@@ -578,6 +600,7 @@
     <slot>editInsertKey()</slot>
     <slot>editDeleteObject()</slot>
     <slot>editDeleteKey()</slot>
+    <slot>loadAllObjects()</slot>
 </slots>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

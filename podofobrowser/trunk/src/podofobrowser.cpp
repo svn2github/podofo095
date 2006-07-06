@@ -231,7 +231,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
     std::string      str;
     int              i      = 0;
     TCIKeyMap        it;
-    PdfObject*       object = static_cast<PdfListViewItem*>(item)->object();
+    PdfObject*      object = static_cast<PdfListViewItem*>(item)->object();
     
     if( !saveObject() ) 
     {
@@ -249,17 +249,17 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
 
     static_cast<PdfListViewItem*>(item)->init();
 
-    if( !object->HasSingleValue() )
+    if( object->IsDictionary() )
     {
-        tableKeys->setNumRows( object->GetKeys().size() );
+        tableKeys->setNumRows( object->GetDictionary().GetKeys().size() );
         tableKeys->setNumCols( 2 );
         tableKeys->horizontalHeader()->setLabel( 0, tr( "Key" ) );
         tableKeys->horizontalHeader()->setLabel( 1, tr( "Value" ) );
 
-        it = object->GetKeys().begin();
-        while( it != object->GetKeys().end() )
+        it = object->GetDictionary().GetKeys().begin();
+        while( it != object->GetDictionary().GetKeys().end() )
         {
-            eCode = (*it).second.ToString( str );
+            eCode = (*it).second->ToString( str );
             if( eCode.IsError() ) 
             {
                 podofoError( eCode );
@@ -277,7 +277,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
     }
     else
     {
-        eCode = object->GetSingleValueVariant().ToString( str );
+        eCode = object->ToString( str );
         if( eCode.IsError() ) 
         {
             podofoError( eCode );
@@ -411,7 +411,7 @@ bool PoDoFoBrowser::saveObject()
     if( !m_pCurObject || !m_bObjectChanged )
         return true;
 
-    if( !m_pCurObject->HasSingleValue() )
+    if( m_pCurObject->IsDictionary() )
     {
         // first check wether all keys are valid
         for( i=0;i<tableKeys->numRows();i++ )
@@ -438,13 +438,13 @@ bool PoDoFoBrowser::saveObject()
         }
 
         // clear the key map
-        m_pCurObject->ClearKeys();
+        m_pCurObject->GetDictionary().Clear();
 
         // first check wether all keys are valid
         for( i=0;i<tableKeys->numRows();i++ )
         {
             eCode = var.Parse( tableKeys->text( i, 1 ).latin1() );
-            m_pCurObject->AddKey( PdfName( tableKeys->text( i, 0 ).latin1() ), var );
+            m_pCurObject->GetDictionary().AddKey( PdfName( tableKeys->text( i, 0 ).latin1() ), var );
         }
     }
     else
@@ -458,12 +458,12 @@ bool PoDoFoBrowser::saveObject()
             return false;
         }
         
-        m_pCurObject->SetSingleValue( var );
+        *m_pCurObject = var;
     }
 
     if( m_bEditableStream && textStream->isModified() ) 
     {
-        m_pCurObject->RemoveKey( PdfName( "Filter" ) );
+        m_pCurObject->GetDictionary().RemoveKey( PdfName( "Filter" ) );
         m_pCurObject->Stream()->Set( textStream->text().latin1() );
         m_pCurObject->FlateDecodeStream();
         statusBar()->message( tr("Stream data saved"), 2000 );
@@ -788,4 +788,28 @@ void PoDoFoBrowser::copyToWriter()
         m_pCurObject = m_writer->GetObjects().GetObject( ref );
     }
 
+}
+
+void PoDoFoBrowser::loadAllObjects()
+{
+    QListViewItemIterator it( listObjects );
+    QProgressDialog       dlg( this );
+    int                   i = 0;
+
+    dlg.setLabelText( QString( tr( "Reading %1 objects ...") ).arg( listObjects->childCount() ) );
+    dlg.setTotalSteps( listObjects->childCount() );
+    dlg.show();
+
+    while( it.current() ) 
+    {
+        if( dlg.wasCancelled() )
+            return;
+
+        dlg.setProgress( i );
+
+        static_cast<PdfListViewItem*>(it.current())->init();    
+
+        ++i;
+        ++it;
+    }
 }

@@ -35,7 +35,7 @@ PdfListViewItem::PdfListViewItem( QListView* parent, PoDoFo::PdfObject* object )
 PdfListViewItem::PdfListViewItem( QListViewItem* parent, PoDoFo::PdfObject* object, const QString & key )
     : QListViewItem( parent ), m_pObject( object ), m_bInitialized( false )
 {
-    m_sText = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
+    m_sText = ""; //QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
     m_sType = key;
     setText( 0, m_sText + m_sType );
 }
@@ -47,7 +47,7 @@ PdfListViewItem::~PdfListViewItem()
 void PdfListViewItem::init()
 {
     PoDoFo::PdfError     eCode;
-    PoDoFo::TCIObjKeyMap itObjs;
+    PoDoFo::TCIKeyMap     it;
     PoDoFo::PdfVariant   var;
     PdfListViewItem*     child;
     std::string          str;
@@ -55,10 +55,16 @@ void PdfListViewItem::init()
     if( m_bInitialized ) 
         return;
 
-    if( m_sType.isEmpty() && m_pObject->HasKey( PoDoFo::PdfName::KeyType ) )
+    if( !(m_pObject && m_pObject->IsDictionary()) ) 
     {
-        eCode = m_pObject->GetKeyValueVariant( PoDoFo::PdfName::KeyType, var );
-        if( !eCode.IsError() && !(eCode = var.ToString( str )).IsError() )
+        m_bInitialized = true;
+        return;
+    }
+
+    if( m_sType.isEmpty() && m_pObject->GetDictionary().HasKey( PoDoFo::PdfName::KeyType ) )
+    {
+        eCode = m_pObject->GetDictionary().GetKey( PoDoFo::PdfName::KeyType )->ToString( str );
+        if( !eCode.IsError() )
             m_sType = str;
     }
 
@@ -67,16 +73,19 @@ void PdfListViewItem::init()
 
     setText( 0, m_sText + m_sType );
 
-    if( m_pObject->GetObjectKeys().size() )
+    if( m_pObject->GetDictionary().GetKeys().size() )
     {
         this->setOpen( true );
 
-        itObjs = m_pObject->GetObjectKeys().begin();
-        while( itObjs != m_pObject->GetObjectKeys().end() )
+        it = m_pObject->GetDictionary().GetKeys().begin();
+        while( it != m_pObject->GetDictionary().GetKeys().end() )
         {
-            child = new PdfListViewItem( this, (*itObjs).second, QString( (*itObjs).first.Name().c_str() ) );
-            child->init();
-            ++itObjs;
+            if( ((*it).second)->IsDictionary() )
+            {
+                child = new PdfListViewItem( this, const_cast<PoDoFo::PdfObject*>((*it).second), QString( (*it).first.Name().c_str() ) );
+                child->init();
+            }
+            ++it;
         }
     }
 

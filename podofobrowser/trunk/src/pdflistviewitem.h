@@ -25,6 +25,8 @@
 
 namespace PoDoFo {
     class PdfObject;
+    class PdfDictionary;
+    class PdfVariant;
 };
 
 class PdfListViewItem : public QListViewItem {
@@ -40,11 +42,11 @@ class PdfListViewItem : public QListViewItem {
     void init();
 
  private:
-    PoDoFo::PdfObject* m_pObject;
-    QString            m_sText;
-    QString            m_sType;
+    PoDoFo::PdfObject*     m_pObject;
+    QString                m_sText;
+    QString                m_sType;
 
-    bool               m_bInitialized;
+    bool                   m_bInitialized;
 };
 
 PoDoFo::PdfObject* PdfListViewItem::object() const
