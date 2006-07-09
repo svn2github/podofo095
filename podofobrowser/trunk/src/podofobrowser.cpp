@@ -231,7 +231,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
     std::string      str;
     int              i      = 0;
     TCIKeyMap        it;
-    PdfObject*      object = static_cast<PdfListViewItem*>(item)->object();
+    PdfObject*       object = static_cast<PdfListViewItem*>(item)->object();
     
     if( !saveObject() ) 
     {
@@ -247,7 +247,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
     m_pCurObject     = object;
     m_bObjectChanged = false;
 
-    static_cast<PdfListViewItem*>(item)->init();
+    dynamic_cast<PdfListViewItem*>(item)->init();
 
     if( object->IsDictionary() )
     {
@@ -384,18 +384,29 @@ void PoDoFoBrowser::fileExit()
 
 void PoDoFoBrowser::podofoError( const PdfError & eCode ) 
 {
-    const char* pszMsg  = PdfError::ErrorMessage( eCode.Error() );
-    const char* pszName = PdfError::ErrorName( eCode.Error() );
+    TCIDequeErrorInfo it = eCode.Callstack().begin();
+    const char* pszMsg   = PdfError::ErrorMessage( eCode.Error() );
+    const char* pszName  = PdfError::ErrorName( eCode.Error() );
 
-    QString info = PdfError::Information();
-    if( !info.isEmpty() )
+    int         i        = 0;
+
+    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\n%3\n" ).arg( eCode.Error() ).arg( pszName ? pszName : "" ).arg( pszMsg ? pszMsg : "" );
+
+    if( eCode.Callstack().size() )
+        msg += "Callstack:\n";
+
+    while( it != eCode.Callstack().end() )
     {
-        info = QString("Information: ") + info;
+        if( !(*it).Filename().empty() )
+            msg += QString("\t#%1 Error Source: %2:%3\n").arg( i ).arg( (*it).Filename().c_str() ).arg( (*it).Line() );
+
+        if( !(*it).Information().empty() )
+            msg += QString("\t\tInformation: %1\n").arg( (*it).Information().c_str() );
+        
+        ++i;
+        ++it;
     }
-
-    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\n%3Error Description: %4\nError Source: %5:%6\n" 
-        ).arg( eCode.Error() ).arg( pszName ? pszName : "" ).arg( info ).arg( pszMsg ).arg( PdfError::Filename() ).arg( PdfError::Line() );
-
+    
     QMessageBox::warning( this, tr("Error"), msg );
 }
 
