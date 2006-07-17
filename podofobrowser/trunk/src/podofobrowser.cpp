@@ -160,19 +160,17 @@ void PoDoFoBrowser::fileNew()
 
 void PoDoFoBrowser::fileOpen( const QString & filename )
 {
-    PdfError         eCode;
     QStringList      lst;
 
     clear();
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
-    eCode = m_parser->Init( filename.latin1(), true );
-
-    if( eCode.IsError() )
-    {
+    try {
+        m_parser->ParseFile( filename.latin1(), true );
+    } catch( PdfError & e ) {
         QApplication::restoreOverrideCursor();
-        podofoError( eCode );
+        podofoError( e );
         return;
     }
     
@@ -207,11 +205,11 @@ bool PoDoFoBrowser::fileSave( const QString & filename )
         copyToWriter();
     }
 
-    eCode = m_writer->Write( filename.latin1() );
-    if( eCode.IsError() ) 
-    {
+    try {
+        m_writer->Write( filename.latin1() );
+    } catch( PdfError & e ) {
         QApplication::restoreOverrideCursor();
-        podofoError( eCode );
+        podofoError( e );
         return false;
     }
 
@@ -259,16 +257,19 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
         it = object->GetDictionary().GetKeys().begin();
         while( it != object->GetDictionary().GetKeys().end() )
         {
-            eCode = (*it).second->ToString( str );
-            if( eCode.IsError() ) 
+            if( !(*it).second->IsDictionary() )
             {
-                podofoError( eCode );
-                break;
+                try {
+                    (*it).second->ToString( str );
+                } catch( PdfError & e ) {
+                    podofoError( e );
+                    break;
+                }
+                
+                tableKeys->setText( i, 0, QString( (*it).first.Name() ) );
+                tableKeys->setText( i, 1, QString( str ) );
             }
-            
-            tableKeys->setText( i, 0, QString( (*it).first.Name() ) );
-            tableKeys->setText( i, 1, QString( str ) );
-            
+
             ++i;
             ++it;
         }
@@ -277,10 +278,10 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
     }
     else
     {
-        eCode = object->ToString( str );
-        if( eCode.IsError() ) 
-        {
-            podofoError( eCode );
+        try {
+            object->ToString( str );
+        } catch( PdfError & e ) {
+            podofoError( e );
             return;
         }
         
@@ -298,7 +299,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
 
 void PoDoFoBrowser::streamChanged( PdfObject* object )
 {
-    PdfError         eCode;
+    bool             bErr   = false;
     char*            pBuf   = NULL;
     long             lLen   = 0;
     QByteArray       data;
@@ -308,14 +309,16 @@ void PoDoFoBrowser::streamChanged( PdfObject* object )
 
     if( object->HasStream() )
     {
-        eCode = object->Stream()->GetFilteredCopy( &pBuf, &lLen );
-        if( eCode.IsError() )
-        {
+        try {
+            object->Stream()->GetFilteredCopy( &pBuf, &lLen );
+        } catch( PdfError & e ) {
             m_bEditableStream = false;
             statusBar()->message( tr("Cannot apply filters to this stream!"), 2000 );
-            podofoError( eCode );
+            podofoError( e );
+            bErr   = true;
         }
-        else
+
+        if( !bErr )
         { 
             m_bEditableStream = (lLen == qstrlen( pBuf ));
             if( m_bEditableStream )
@@ -437,13 +440,13 @@ bool PoDoFoBrowser::saveObject()
 
 
             pszText = tableKeys->text( i, 1 ).latin1();
-            eCode = var.Parse( pszText );
 
-            if( eCode.IsError() )
-            {
+            try {
+                var.Parse( pszText );
+            } catch( PdfError & e ) {
                 QString msg = QString("\"%1\" is no valid PDF datatype.\n").arg( pszText );
-                eCode.SetErrorInformation( msg.latin1() );
-                podofoError( eCode );
+                e.SetErrorInformation( msg.latin1() );
+                podofoError( e );
                 return false;
             }
         }
@@ -454,17 +457,16 @@ bool PoDoFoBrowser::saveObject()
         // first check wether all keys are valid
         for( i=0;i<tableKeys->numRows();i++ )
         {
-            eCode = var.Parse( tableKeys->text( i, 1 ).latin1() );
+            var.Parse( tableKeys->text( i, 1 ).latin1() );
             m_pCurObject->GetDictionary().AddKey( PdfName( tableKeys->text( i, 0 ).latin1() ), var );
         }
     }
     else
     {
         pszText = tableKeys->text( 0, 0 ).latin1();
-        eCode = var.Parse( pszText );
-        
-        if( eCode.IsError() )
-        {
+        try {
+            var.Parse( pszText );
+        } catch ( PdfError & e ) {
             podofoError( eCode );
             return false;
         }
@@ -529,10 +531,10 @@ void PoDoFoBrowser::slotImportStream()
     lLen = file.readBlock( pBuf, file.size() );
     file.close();
 
-    eCode = m_pCurObject->Stream()->Set( pBuf, lLen );
-    if( eCode.IsError() )
-    {
-        podofoError( eCode );
+    try {
+        m_pCurObject->Stream()->Set( pBuf, lLen );
+    } catch( PdfError & e ) {
+        podofoError( e );
         return;
     }
 
@@ -556,10 +558,10 @@ void PoDoFoBrowser::slotExportStream()
     if( filename.isNull() )
         return;
 
-    eCode = m_pCurObject->Stream()->GetFilteredCopy( &pBuf, &lLen );    
-    if( eCode.IsError() )
-    {
-        podofoError( eCode );
+    try {
+        m_pCurObject->Stream()->GetFilteredCopy( &pBuf, &lLen );    
+    } catch( PdfError & e ) {
+        podofoError( e );
         return;
     }
 
@@ -577,7 +579,6 @@ void PoDoFoBrowser::slotExportStream()
 
 void PoDoFoBrowser::toolsToHex()
 {
-    PdfError       eCode;
     PdfHexFilter   filter;
 
     char* pBuffer = NULL;
@@ -586,10 +587,10 @@ void PoDoFoBrowser::toolsToHex()
 
     if( QString::null != text ) 
     {
-        eCode = filter.Encode( text.latin1(), text.length(), &pBuffer, &lLen );
-        if( eCode.IsError() )
-        {
-            podofoError( eCode );
+        try {
+            filter.Encode( text.latin1(), text.length(), &pBuffer, &lLen );
+        } catch( PdfError & e ) {
+            podofoError( e );
             return;
         }
 
@@ -600,7 +601,6 @@ void PoDoFoBrowser::toolsToHex()
 
 void PoDoFoBrowser::toolsFromHex()
 {
-    PdfError       eCode;
     PdfHexFilter   filter;
 
     char* pBuffer = NULL;
@@ -609,10 +609,10 @@ void PoDoFoBrowser::toolsFromHex()
 
     if( QString::null != text ) 
     {
-        eCode = filter.Decode( text.latin1(), text.length(), &pBuffer, &lLen );
-        if( eCode.IsError() )
-        {
-            podofoError( eCode );
+        try {
+            filter.Decode( text.latin1(), text.length(), &pBuffer, &lLen );
+        } catch( PdfError & e ) {
+            podofoError( e );
             return;
         }
 

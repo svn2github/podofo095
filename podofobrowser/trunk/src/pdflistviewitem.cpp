@@ -63,13 +63,9 @@ void PdfListViewItem::init()
 
     if( m_sType.isEmpty() && m_pObject->GetDictionary().HasKey( PoDoFo::PdfName::KeyType ) )
     {
-        eCode = m_pObject->GetDictionary().GetKey( PoDoFo::PdfName::KeyType )->ToString( str );
-        if( !eCode.IsError() )
-            m_sType = str;
+        m_pObject->GetDictionary().GetKey( PoDoFo::PdfName::KeyType )->ToString( str );
+        m_sType = str;
     }
-
-    if( eCode.IsError() )
-        eCode.PrintErrorMsg();
 
     setText( 0, m_sText + m_sType );
 
