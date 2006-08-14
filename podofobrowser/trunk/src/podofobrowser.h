@@ -23,7 +23,7 @@
 
 #include "podofobrowserbase.h"
 
-#include <podofo.h>
+#include <podofo/podofo.h>
 
 #include <qstring.h>
 
@@ -83,15 +83,14 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
  private:
     void loadObjects();
     bool trySave();
-    void copyToWriter();
 
  private:
 
     QListViewItem*        m_lastItem;
     QString               m_filename;
-    PoDoFo::PdfParser*    m_parser;
-    PoDoFo::PdfWriter*    m_writer;
+
     PoDoFo::PdfObject*    m_pCurObject;
+    PoDoFo::PdfDocument*  m_pDocument;
 
     bool                  m_bEditableStream;
     bool                  m_bChanged;

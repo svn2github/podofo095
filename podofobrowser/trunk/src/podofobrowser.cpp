@@ -56,11 +56,8 @@ private:
 };
 
 PoDoFoBrowser::PoDoFoBrowser()
-   : PoDoFoBrowserBase( 0, "PoDoFoBrowser", WDestructiveClose )
+    : PoDoFoBrowserBase( 0, "PoDoFoBrowser", WDestructiveClose ), m_pDocument( NULL )
 {
-    m_writer     = NULL;
-    m_parser     = new PdfParser();
-
     clear();
 
     listObjects->setSorting( -1 );
@@ -81,8 +78,7 @@ PoDoFoBrowser::~PoDoFoBrowser()
 {
     saveConfig();
 
-    delete m_parser;
-    delete m_writer;
+    delete m_pDocument;
 }
 
 void PoDoFoBrowser::loadConfig()
@@ -129,13 +125,13 @@ void PoDoFoBrowser::clear()
     m_filename = QString::null;
     setCaption( "PoDoFoBrowser" );
     
-    delete m_writer;
+    delete m_pDocument;
 
     m_pCurObject      = NULL;
     m_lastItem        = NULL;
     m_bEditableStream = false;
     m_bChanged        = false;
-    m_writer          = NULL;
+    m_pDocument       = NULL;
     m_bObjectChanged  = false;
 
     listObjects->clear();
@@ -152,8 +148,7 @@ void PoDoFoBrowser::fileNew()
 
    this->clear();
 
-   m_writer = new PdfWriter();
-   m_writer->Init( false );
+   m_pDocument = new PdfDocument();
 
    loadObjects();
 }
@@ -166,8 +161,9 @@ void PoDoFoBrowser::fileOpen( const QString & filename )
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
+
     try {
-        m_parser->ParseFile( filename.latin1(), true );
+        m_pDocument = new PdfDocument( filename.latin1() );
     } catch( PdfError & e ) {
         QApplication::restoreOverrideCursor();
         podofoError( e );
@@ -200,13 +196,8 @@ bool PoDoFoBrowser::fileSave( const QString & filename )
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
-    if( !m_writer )
-    {
-        copyToWriter();
-    }
-
     try {
-        m_writer->Write( filename.latin1() );
+        m_pDocument->Write( filename.latin1() );
     } catch( PdfError & e ) {
         QApplication::restoreOverrideCursor();
         podofoError( e );
@@ -482,11 +473,6 @@ bool PoDoFoBrowser::saveObject()
         statusBar()->message( tr("Stream data saved"), 2000 );
     }
 
-    if( !m_writer )
-    {
-        copyToWriter();
-    }
-
     m_bChanged       = true;
     m_bObjectChanged = false;
 
@@ -513,11 +499,6 @@ void PoDoFoBrowser::slotImportStream()
     {
         QMessageBox::critical( this, tr("Error"), QString( tr("Cannot open file %1 for reading.") ).arg( filename ) );
         return;
-    }
-
-    if( !m_writer )
-    {
-        copyToWriter();
     }
 
     pBuf = (char*)malloc( file.size() * sizeof(char) );
@@ -640,12 +621,7 @@ void PoDoFoBrowser::editInsertObject()
 
     if( saveObject() )
     {
-        if( !m_writer )
-        {
-            copyToWriter();
-        }
-
-        pObject = m_writer->GetObjects().CreateObject();
+        pObject = m_pDocument->GetObjects().CreateObject();
         listObjects->setCurrentItem( new PdfListViewItem( listObjects, pObject ) );
 
         m_bObjectChanged = true;
@@ -688,12 +664,7 @@ void PoDoFoBrowser::editDeleteObject()
     if( QMessageBox::question( this, tr("Delete"), QString( tr("Do you really want to delete the object '%1'?") ).arg( 
                                m_pCurObject->Reference().ToString().c_str() ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
     {
-        if( !m_writer )
-        {
-            copyToWriter();
-        }
-
-        pObj = m_writer->RemoveObject( PdfReference( m_pCurObject->ObjectNumber(), m_pCurObject->GenerationNumber() ) );
+        pObj = m_pDocument->GetObjects().RemoveObject( PdfReference( m_pCurObject->ObjectNumber(), m_pCurObject->GenerationNumber() ) );
         if( pObj ) 
         {
             delete pObj;
@@ -713,19 +684,18 @@ void PoDoFoBrowser::editDeleteObject()
 void PoDoFoBrowser::loadObjects()
 {
     TCIVecObjects       it;
-    const TVecObjects & vec = m_writer ? m_writer->GetObjects() : m_parser->GetObjects();
     QProgressDialog     dlg( this );
     int                 i   = 0;
 
-    dlg.setLabelText( QString( tr( "Reading %1 objects ...") ).arg( vec.size() ) );
-    dlg.setTotalSteps( vec.size() );
+    dlg.setLabelText( QString( tr( "Reading %1 objects ...") ).arg( m_pDocument->GetObjects().size() ) );
+    dlg.setTotalSteps( m_pDocument->GetObjects().size() );
     dlg.show();
 
-    it = vec.begin();
+    it = m_pDocument->GetObjects().begin();
     listObjects->setUpdatesEnabled( false );
     listObjects->viewport()->setUpdatesEnabled( false );
     listObjects->clear();
-    while( it != vec.end() )
+    while( it != m_pDocument->GetObjects().end() )
     {
         new PdfListViewItem( listObjects, *it );
 
@@ -781,24 +751,6 @@ bool PoDoFoBrowser::trySave()
 void PoDoFoBrowser::slotTableChanged()
 {
     m_bObjectChanged = true;
-}
-
-void PoDoFoBrowser::copyToWriter() 
-{
-    PdfReference ref;
-
-    if( !m_writer && m_pCurObject )
-    {
-        m_writer = new PdfWriter();
-        m_writer->Init( m_parser );
-
-        // copy objects into the writer and load from there
-        ref = m_pCurObject->Reference();
-
-        loadObjects();
-        m_pCurObject = m_writer->GetObjects().GetObject( ref );
-    }
-
 }
 
 void PoDoFoBrowser::loadAllObjects()
