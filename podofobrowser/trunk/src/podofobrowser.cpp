@@ -195,6 +195,7 @@ bool PoDoFoBrowser::fileSave( const QString & filename )
     }
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
+    loadAllObjects();
 
     try {
         m_pDocument->Write( filename.latin1() );
@@ -293,12 +294,19 @@ void PoDoFoBrowser::streamChanged( PdfObject* object )
     bool             bErr   = false;
     char*            pBuf   = NULL;
     long             lLen   = 0;
+    bool             bHas   = true;
     QByteArray       data;
 
     if( !object )
         return;
 
-    if( object->HasStream() )
+    try {
+        bHas = object->HasStream();
+    } catch( PdfError & e ) {
+        podofoError( e );
+    }
+
+    if( bHas )
     {
         try {
             object->Stream()->GetFilteredCopy( &pBuf, &lLen );
