@@ -33,7 +33,7 @@
  * You should always use podofo.h and not try to include
  * the required headers on your own.
  */
-#include <podofo.h>
+#include <podofo/podofo.h>
 
 /*
  * All podofo classes are member of the PoDoFo namespace.
@@ -49,17 +49,12 @@ void PrintHelp()
     std::cout << "  examplehelloworld [outputfile.pdf]" << std::endl << std::endl;
 }
 
-PdfError HelloWorld( const char* pszFilename ) 
+void HelloWorld( const char* pszFilename ) 
 {
     /*
-     * Most PoDoFo functions and classes return a PdfError object.
-     * It contains information about an error and where it has occurred.
+     * PdfDocument is the class that can actually write a PDF file.
      */
-    PdfError        eCode;
-    /*
-     * PdfSimpleWriter is the class that can actually write a PDF file.
-     */
-    PdfSimpleWriter writer;
+    PdfDocument document;
     /*
      * This pointer will hold the page object later. 
      * PdfSimpleWriter can write several PdfPage's to a PDF file.
@@ -78,30 +73,21 @@ PdfError HelloWorld( const char* pszFilename )
     PdfFont* pFont;
 
     /*
-     * A PdfSimpleWriter object has to be initialized before it can be used.
-     *
-     * A PdfError object is returned. The SAFE_OP macro checks if an error has occurred.
-     * If an error has occured it returns the PdfError object (which has to be called eCode)
-     * from the current function. Otherwise the program continues as normal.
-     */
-    SAFE_OP( writer.Init() );
-
-    /*
-     * The PdfSimpleWriter object is initialized and can be used to create new PdfPage objects.
-     * The PdfPage object is owned by the PdfSimpleWriter and will also be deleted automatically
-     * by the PdfSimpleWriter object.
+     * The PdfDocument object can be used to create new PdfPage objects.
+     * The PdfPage object is owned by the PdfDocument will also be deleted automatically
+     * by the PdfDocument object.
      *
      * You have to pass only one argument, i.e. the page size of the page to create.
      * There are predefined enums for some common page sizes.
      */
-    pPage = writer.CreatePage( PdfPage::CreateStadardPageSize( ePdfPageSize_A4 ) );
+    pPage = document.CreatePage( PdfPage::CreateStandardPageSize( ePdfPageSize_A4 ) );
 
     /*
      * If the page cannot be created because of an error (e.g. ePdfError_OutOfMemory )
      * a NULL pointer is returned.
-     * We check for a NULL pointer here and return an error core using the RAISE_ERROR macro.
-     * The raise error macro initializes the PdfError object with a given error code and
-     * the location in the file in which the error ocurred.
+     * We check for a NULL pointer here and throw an exception using the RAISE_ERROR macro.
+     * The raise error macro initializes a PdfError object with a given error code and
+     * the location in the file in which the error ocurred and throws it as an exception.
      */
     if( !pPage ) 
     {
@@ -119,9 +105,9 @@ PdfError HelloWorld( const char* pszFilename )
      * The font is found on the system using fontconfig and embedded into the
      * PDF file. If Arial is not available, a default font will be used.
      *
-     * The created PdfFont will be deleted by PdfSimpleWriter.
+     * The created PdfFont will be deleted by the PdfDocument.
      */
-    pFont = writer.CreateFont( "Arial" );
+    pFont = document.CreateFont( "Arial" );
     
     /*
      * If the PdfFont object cannot be allocated return an error.
@@ -152,39 +138,36 @@ PdfError HelloWorld( const char* pszFilename )
 
     /*
      * Actually draw the line "Hello World!" on to the PdfPage at
-     * the position 2cm,2cm from the top left corner.
+     * the position 2cm,2cm from the top left corner. 
+     * Please remember that PDF files have their origin at the 
+     * bottom left corner. Therefore we substract the y coordinate 
+     * from the page height.
      * 
      * The position specifies the start of the baseline of the text.
      *
-     * All coordinates in PoDoFo are in 1/1000th mm.
+     * All coordinates in PoDoFo are in PDF units.
+     * You can also use PdfPainterMM which takes coordinates in 1/1000th mm.
+     *
      */
-    SAFE_OP( painter.DrawText( 20 * 1000, 20 * 1000, "Hello World!" ) );
+    painter.DrawText( 56.69, pPage->PageSize().Height() - 56.69, "Hello World!" );
 
     /*
      * Set some additional information on the PDF file.
      */
-    writer.SetDocumentCreator ( PdfString("examplahelloworld - A PoDoFo test application") );
-    writer.SetDocumentAuthor  ( PdfString("Dominik Seichter") );
-    writer.SetDocumentTitle   ( PdfString("Hello World") );
-    writer.SetDocumentSubject ( PdfString("Testing the PoDoFo PDF Library") );
-    writer.SetDocumentKeywords( PdfString("Test;PDF;Hello World;") );
+    document.SetCreator ( PdfString("examplahelloworld - A PoDoFo test application") );
+    document.SetAuthor  ( PdfString("Dominik Seichter") );
+    document.SetTitle   ( PdfString("Hello World") );
+    document.SetSubject ( PdfString("Testing the PoDoFo PDF Library") );
+    document.SetKeywords( PdfString("Test;PDF;Hello World;") );
 
     /*
      * The last step is to write the PDF file from memory to the harddisk.
      */
-    SAFE_OP( writer.Write( pszFilename ) );
-
-    return eCode;
+    document.Write( pszFilename );
 }
 
 int main( int argc, char* argv[] )
 {
-    /*
-     * Most PoDoFo functions and classes return a PdfError object.
-     * It contains information about an error and where it has occurred.
-     */
-    PdfError        eCode;
-
     /*
      * Check if a filename was passed as commandline argument.
      * If more than 1 argument or no argument is passed,
@@ -198,20 +181,26 @@ int main( int argc, char* argv[] )
     }
 
     /*
-     * Call the drawing routing which will create a PDF file
-     * with the filename of the output file as argument.
-     * 
-     * The function returns a PdfError object. 
+     * All podofo functions will throw an exception in case of an error.
+     *
+     * You should catch the exception to either fix it or report
+     * back to the user.
+     *
+     * All exceptions podofo throws are objects of the class PdfError.
+     * Thats why we simply catch PdfError objects.
      */
-    eCode = HelloWorld( argv[1] );
-
-    /*
-     * We have to check if an error has occurred.
-     * If yes we return and print an error message
-     * to the commandline.
-     */
-    if( eCode.IsError() )
-    {
+    try {
+        /*
+         * Call the drawing routing which will create a PDF file
+         * with the filename of the output file as argument.
+         */
+         HelloWorld( argv[1] );
+    } catch( const PdfError & eCode ) {
+        /*
+         * We have to check if an error has occurred.
+         * If yes, we return and print an error message
+         * to the commandline.
+         */
         eCode.PrintErrorMsg();
         return eCode.Error();
     }
