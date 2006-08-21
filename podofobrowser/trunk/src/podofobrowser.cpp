@@ -315,6 +315,7 @@ void PoDoFoBrowser::streamChanged( PdfObject* object )
             statusBar()->message( tr("Cannot apply filters to this stream!"), 2000 );
             podofoError( e );
             bErr   = true;
+            textStream->setText( "" );
         }
 
         if( !bErr )
