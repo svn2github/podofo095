@@ -149,16 +149,16 @@ void HelloWorld( const char* pszFilename )
      * You can also use PdfPainterMM which takes coordinates in 1/1000th mm.
      *
      */
-    painter.DrawText( 56.69, pPage->PageSize().Height() - 56.69, "Hello World!" );
+    painter.DrawText( 56.69, pPage->GetPageSize().GetHeight() - 56.69, "Hello World!" );
 
     /*
      * Set some additional information on the PDF file.
      */
-    document.SetCreator ( PdfString("examplahelloworld - A PoDoFo test application") );
-    document.SetAuthor  ( PdfString("Dominik Seichter") );
-    document.SetTitle   ( PdfString("Hello World") );
-    document.SetSubject ( PdfString("Testing the PoDoFo PDF Library") );
-    document.SetKeywords( PdfString("Test;PDF;Hello World;") );
+    document.GetInfo()->SetCreator ( PdfString("examplahelloworld - A PoDoFo test application") );
+    document.GetInfo()->SetAuthor  ( PdfString("Dominik Seichter") );
+    document.GetInfo()->SetTitle   ( PdfString("Hello World") );
+    document.GetInfo()->SetSubject ( PdfString("Testing the PoDoFo PDF Library") );
+    document.GetInfo()->SetKeywords( PdfString("Test;PDF;Hello World;") );
 
     /*
      * The last step is to write the PDF file from memory to the harddisk.
@@ -202,7 +202,7 @@ int main( int argc, char* argv[] )
          * to the commandline.
          */
         eCode.PrintErrorMsg();
-        return eCode.Error();
+        return eCode.GetError();
     }
 
     /*
