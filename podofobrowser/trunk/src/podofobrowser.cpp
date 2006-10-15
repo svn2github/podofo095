@@ -41,18 +41,18 @@ using namespace PoDoFo;
 
 class ObjectsComperator { 
 public:
-    ObjectsComperator( long lObject, long lGeneration )
+    ObjectsComperator( unsigned long lObject, unsigned long lGeneration )
         {
             m_lObject     = lObject;
             m_lGeneration = lGeneration;
         }
     
     bool operator()(const PdfObject* p1) { 
-        return (p1->ObjectNumber() == m_lObject && p1->GenerationNumber() == m_lGeneration );
+        return (p1->Reference().ObjectNumber() == m_lObject && p1->Reference().GenerationNumber() == m_lGeneration );
     }
 private:
-    long m_lObject;
-    long m_lGeneration;
+    unsigned long m_lObject;
+    unsigned long m_lGeneration;
 };
 
 PoDoFoBrowser::PoDoFoBrowser()
@@ -258,7 +258,7 @@ void PoDoFoBrowser::objectChanged( QListViewItem* item )
                     break;
                 }
                 
-                tableKeys->setText( i, 0, QString( (*it).first.Name() ) );
+                tableKeys->setText( i, 0, QString( (*it).first.GetName() ) );
                 tableKeys->setText( i, 1, QString( str ) );
             }
 
@@ -309,7 +309,7 @@ void PoDoFoBrowser::streamChanged( PdfObject* object )
     if( bHas )
     {
         try {
-            object->Stream()->GetFilteredCopy( &pBuf, &lLen );
+            object->GetStream()->GetFilteredCopy( &pBuf, &lLen );
         } catch( PdfError & e ) {
             m_bEditableStream = false;
             statusBar()->message( tr("Cannot apply filters to this stream!"), 2000 );
@@ -387,24 +387,24 @@ void PoDoFoBrowser::fileExit()
 
 void PoDoFoBrowser::podofoError( const PdfError & eCode ) 
 {
-    TCIDequeErrorInfo it = eCode.Callstack().begin();
-    const char* pszMsg   = PdfError::ErrorMessage( eCode.Error() );
-    const char* pszName  = PdfError::ErrorName( eCode.Error() );
+    TCIDequeErrorInfo it = eCode.GetCallstack().begin();
+    const char* pszMsg   = PdfError::ErrorMessage( eCode.GetError() );
+    const char* pszName  = PdfError::ErrorName( eCode.GetError() );
 
     int         i        = 0;
 
-    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\n%3\n" ).arg( eCode.Error() ).arg( pszName ? pszName : "" ).arg( pszMsg ? pszMsg : "" );
+    QString msg = QString( "PoDoFoBrowser encounter an error.\nError: %1 %2\n%3\n" ).arg( eCode.GetError() ).arg( pszName ? pszName : "" ).arg( pszMsg ? pszMsg : "" );
 
-    if( eCode.Callstack().size() )
+    if( eCode.GetCallstack().size() )
         msg += "Callstack:\n";
 
-    while( it != eCode.Callstack().end() )
+    while( it != eCode.GetCallstack().end() )
     {
-        if( !(*it).Filename().empty() )
-            msg += QString("\t#%1 Error Source: %2:%3\n").arg( i ).arg( (*it).Filename().c_str() ).arg( (*it).Line() );
+        if( !(*it).GetFilename().empty() )
+            msg += QString("\t#%1 Error Source: %2:%3\n").arg( i ).arg( (*it).GetFilename().c_str() ).arg( (*it).GetLine() );
 
-        if( !(*it).Information().empty() )
-            msg += QString("\t\tInformation: %1\n").arg( (*it).Information().c_str() );
+        if( !(*it).GetInformation().empty() )
+            msg += QString("\t\tInformation: %1\n").arg( (*it).GetInformation().c_str() );
         
         ++i;
         ++it;
@@ -432,7 +432,7 @@ bool PoDoFoBrowser::saveObject()
         {
             pszText = tableKeys->text( i, 0 ).latin1();
             name    = PdfName( pszText );
-            if( name.Length() == 0 )
+            if( name.GetLength() == 0 )
             {
                 QMessageBox::warning( this, tr("Error"), QString("Error: %1 is no valid name.").arg( pszText ) );
                 return false;
@@ -477,8 +477,8 @@ bool PoDoFoBrowser::saveObject()
     if( m_bEditableStream && textStream->isModified() ) 
     {
         m_pCurObject->GetDictionary().RemoveKey( PdfName( "Filter" ) );
-        m_pCurObject->Stream()->Set( textStream->text().latin1() );
-        m_pCurObject->FlateDecodeStream();
+        m_pCurObject->GetStream()->Set( textStream->text().latin1() );
+        m_pCurObject->FlateCompressStream();
         statusBar()->message( tr("Stream data saved"), 2000 );
     }
 
@@ -522,7 +522,7 @@ void PoDoFoBrowser::slotImportStream()
     file.close();
 
     try {
-        m_pCurObject->Stream()->Set( pBuf, lLen );
+        m_pCurObject->GetStream()->Set( pBuf, lLen );
     } catch( PdfError & e ) {
         podofoError( e );
         return;
@@ -549,7 +549,7 @@ void PoDoFoBrowser::slotExportStream()
         return;
 
     try {
-        m_pCurObject->Stream()->GetFilteredCopy( &pBuf, &lLen );    
+        m_pCurObject->GetStream()->GetFilteredCopy( &pBuf, &lLen );    
     } catch( PdfError & e ) {
         podofoError( e );
         return;
@@ -673,7 +673,7 @@ void PoDoFoBrowser::editDeleteObject()
     if( QMessageBox::question( this, tr("Delete"), QString( tr("Do you really want to delete the object '%1'?") ).arg( 
                                m_pCurObject->Reference().ToString().c_str() ), QMessageBox::Yes, QMessageBox::No ) == QMessageBox::Yes ) 
     {
-        pObj = m_pDocument->GetObjects().RemoveObject( PdfReference( m_pCurObject->ObjectNumber(), m_pCurObject->GenerationNumber() ) );
+        pObj = m_pDocument->GetObjects().RemoveObject( m_pCurObject->Reference() );
         if( pObj ) 
         {
             delete pObj;

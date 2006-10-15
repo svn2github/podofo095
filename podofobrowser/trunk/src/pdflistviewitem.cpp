@@ -27,7 +27,7 @@
 PdfListViewItem::PdfListViewItem( QListView* parent, PoDoFo::PdfObject* object )
     : QListViewItem( parent, parent->lastItem() ), m_pObject( object ), m_bInitialized( false )
 {
-    m_sText = QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
+    m_sText = QString( "%1 %2 R  " ).arg( m_pObject->Reference().ObjectNumber() ).arg( m_pObject->Reference().GenerationNumber() );
     m_sType = "";
     setText( 0, m_sText + m_sType );
 }
@@ -78,7 +78,7 @@ void PdfListViewItem::init()
         {
             if( ((*it).second)->IsDictionary() )
             {
-                child = new PdfListViewItem( this, const_cast<PoDoFo::PdfObject*>((*it).second), QString( (*it).first.Name().c_str() ) );
+                child = new PdfListViewItem( this, const_cast<PoDoFo::PdfObject*>((*it).second), QString( (*it).first.GetName().c_str() ) );
                 child->init();
             }
             ++it;
@@ -96,10 +96,10 @@ int PdfListViewItem::compare( QListViewItem* i, int col, bool ascending ) const
         return QListViewItem::compare( i, col, ascending );
     else
     {
-        if( item->object()->ObjectNumber() == this->object()->ObjectNumber() )
+        if( item->object()->Reference() == this->object()->Reference() )
             return 0;
 
-        if( this->object()->ObjectNumber() > item->object()->ObjectNumber() )
+        if( item->object()->Reference() < this->object()->Reference() )
             return ascending ? 1 : -1;
         else 
             return ascending ? -1 : 1;
