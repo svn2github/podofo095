@@ -21,6 +21,12 @@
 #ifndef _PDF_LIST_VIEW_ITEM_H_
 #define _PDF_LIST_VIEW_ITEM_H_
 
+// Sledge hammer approach to getting all the required definitions
+// for Qt4
+#include <QtCore>
+#include <QtGui>
+#include <Qt3Support>
+
 #include "qlistview.h"
 
 namespace PoDoFo {
@@ -29,15 +35,15 @@ namespace PoDoFo {
     class PdfVariant;
 };
 
-class PdfListViewItem : public QListViewItem {
+class PdfListViewItem : public Q3ListViewItem {
  public:
-    PdfListViewItem( QListView* parent, PoDoFo::PdfObject* object );
-    PdfListViewItem( QListViewItem* parent, PoDoFo::PdfObject* object, const QString & key );
+    PdfListViewItem( Q3ListView* parent, PoDoFo::PdfObject* object );
+    PdfListViewItem( Q3ListViewItem* parent, PoDoFo::PdfObject* object, const QString & key );
     ~PdfListViewItem();
 
     inline PoDoFo::PdfObject* object() const; 
 
-    int compare( QListViewItem* i, int col, bool ascending ) const;
+    int compare( Q3ListViewItem* i, int col, bool ascending ) const;
 
     void init();
 

@@ -20,20 +20,20 @@
 
 #include "pdflistviewitem.h"
 
-#include <podofo/podofo.h>
+#include <podofo.h>
 
 #include <string>
 
-PdfListViewItem::PdfListViewItem( QListView* parent, PoDoFo::PdfObject* object )
-    : QListViewItem( parent, parent->lastItem() ), m_pObject( object ), m_bInitialized( false )
+PdfListViewItem::PdfListViewItem( Q3ListView* parent, PoDoFo::PdfObject* object )
+    : Q3ListViewItem( parent, parent->lastItem() ), m_pObject( object ), m_bInitialized( false )
 {
     m_sText = QString( "%1 %2 R  " ).arg( m_pObject->Reference().ObjectNumber() ).arg( m_pObject->Reference().GenerationNumber() );
     m_sType = "";
     setText( 0, m_sText + m_sType );
 }
 
-PdfListViewItem::PdfListViewItem( QListViewItem* parent, PoDoFo::PdfObject* object, const QString & key )
-    : QListViewItem( parent ), m_pObject( object ), m_bInitialized( false )
+PdfListViewItem::PdfListViewItem( Q3ListViewItem* parent, PoDoFo::PdfObject* object, const QString & key )
+    : Q3ListViewItem( parent ), m_pObject( object ), m_bInitialized( false )
 {
     m_sText = ""; //QString( "%1 %2 R  " ).arg( m_pObject->ObjectNumber() ).arg( m_pObject->GenerationNumber() );
     m_sType = key;
@@ -64,7 +64,7 @@ void PdfListViewItem::init()
     if( m_sType.isEmpty() && m_pObject->GetDictionary().HasKey( PoDoFo::PdfName::KeyType ) )
     {
         m_pObject->GetDictionary().GetKey( PoDoFo::PdfName::KeyType )->ToString( str );
-        m_sType = str;
+        m_sType = str.c_str();
     }
 
     setText( 0, m_sText + m_sType );
@@ -88,12 +88,12 @@ void PdfListViewItem::init()
     m_bInitialized = true;
 }
 
-int PdfListViewItem::compare( QListViewItem* i, int col, bool ascending ) const
+int PdfListViewItem::compare( Q3ListViewItem* i, int col, bool ascending ) const
 {
     PdfListViewItem* item = dynamic_cast<PdfListViewItem*>(i);
 
     if( col || !item )
-        return QListViewItem::compare( i, col, ascending );
+        return Q3ListViewItem::compare( i, col, ascending );
     else
     {
         if( item->object()->Reference() == this->object()->Reference() )

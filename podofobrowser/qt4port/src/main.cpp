@@ -18,9 +18,13 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+// Sledge hammer approach to getting all required qt4 includes
+#include <QtCore>
+#include <QtGui>
+#include <Qt3Support>
 
-#include <qapplication.h>
 #include "podofobrowser.h"
+#include <qapplication.h>
 
 int main( int argc, char ** argv ) {
     QApplication a( argc, argv );

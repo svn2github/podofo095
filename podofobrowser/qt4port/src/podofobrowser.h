@@ -21,13 +21,17 @@
 #ifndef PODOFOBROWSER_H
 #define PODOFOBROWSER_H
 
+// Sledge hammer approach to getting all the required definitions
+// for Qt4
+#include <QtCore>
+#include <QtGui>
+#include <Qt3Support>
+
 #include "podofobrowserbase.h"
-
-#include <podofo/podofo.h>
-
+#include <podofo.h>
 #include <qstring.h>
 
-class QListViewItem;
+class Q3ListViewItem;
 
 class PoDoFoBrowser: public PoDoFoBrowserBase
 {
@@ -75,7 +79,7 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     void helpAbout();
 
  private slots:
-    void objectChanged( QListViewItem* );
+    void objectChanged( Q3ListViewItem* );
     void slotImportStream();
     void slotExportStream();
     void slotTableChanged();
@@ -86,7 +90,7 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
 
  private:
 
-    QListViewItem*        m_lastItem;
+    Q3ListViewItem*        m_lastItem;
     QString               m_filename;
 
     PoDoFo::PdfObject*    m_pCurObject;

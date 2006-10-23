@@ -1,12 +1,14 @@
-SUBDIRS += src
-TEMPLATE = subdirs 
-CONFIG += debug \
-          warn_on \
-          qt \
-          thread 
+TEMPLATE = app
+CONFIG += qt uic3
+QT += qt3support
+TARGET = 
+DEFINES += USING_SHARED_PODOFO
+DEPENDPATH += .
+INCLUDEPATH += . src d:\developer\podofo\src d:\developer\scribus\gnuwin32\include d:\developer\scribus\gnuwin32\include\freetype2
 
-browser.path = /usr/local/bin/
-browser.files = ./bin/podofobrowser
+unix:LIBS +=
+win32:LIBS += d:/developer/podofo-mingw/src/libpodofo.dll.a
 
-INSTALLS += browser
-
+HEADERS += src/pdflistviewitem.h src/podofobrowser.h
+FORMS3 += src/podofoaboutdlg.ui src/podofobrowserbase.ui
+SOURCES += src/main.cpp src/pdflistviewitem.cpp src/podofobrowser.cpp
