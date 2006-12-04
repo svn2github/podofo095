@@ -27,7 +27,7 @@
 #include <QtGui>
 #include <Qt3Support>
 
-#include "podofobrowserbase.h"
+#include "ui_podofobrowserbase.h"
 #include <podofo.h>
 #include <qstring.h>
 
