@@ -3,7 +3,7 @@ at least CMake 2.5.x, currently only available from CMake CVS. PoDoFo must have
 been built with CMake.
 
 cmake -G "Unix Makefiles" \
-	-DPoDoFo_DIRECTORY=/path/to/podofo_build_dir \
+	-DPoDoFo_DIR=/path/to/podofo_build_dir \
 	-DCMAKE_INCLUDE_PATH=/path/to/extra/includes \
 	-DCMAKE_LIBRARY_PATH=/path/to/extra/libraries \
 
@@ -16,7 +16,7 @@ you used to build PoDoFo against (important!).
 SET QTDIR=c:\qt\4.2.1
 SET PATH=c:\mingw\bin;%PATH%
 cmake -G "MinGW Makefiles"
-	-DPoDoFo_DIRECTORY=c:\developer\podofo_build_dir
+	-DPoDoFo_DIR=c:\developer\podofo_build_dir
 	-DCMAKE_INCLUDE_PATH=c:\progra~1\gnuwin32\include
 	-DCMAKE_LIBRARY_PATH=c:\progra~1\gnuwin32\lib
 
