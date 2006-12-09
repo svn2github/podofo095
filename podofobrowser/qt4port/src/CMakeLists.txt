@@ -4,18 +4,41 @@ SET(podofobrowser_UIS
 	)
 
 SET(podofobrowser_MOC_HEADERS
-	pdflistviewitem.h
 	podofobrowser.h
 	)
 
-QT4_WRAP_UI(podofobrowser_UIS_H ${podofobrowser_UIS})
+# We use UIC3, which isn't supported by QT4_WRAP_UI
+#QT4_WRAP_UI(podofobrowser_UIS_H ${podofobrowser_UIS})
+
 QT4_WRAP_CPP(podofobrowser_MOC_SRCS ${podofobrowser_MOC_HEADERS})
 
+ADD_CUSTOM_COMMAND(
+	OUTPUT ui_podofoaboutdlg.h ui_podofoaboutdlg.cpp
+	COMMAND ${QT_UIC3_EXECUTABLE} -o ui_podofoaboutdlg.h
+				      podofoaboutdlg.ui
+	COMMAND ${QT_UIC3_EXECUTABLE} -o ui_podofoaboutdlg.cpp
+				      -impl ui_podofoaboutdlg.h
+				      podofoaboutdlg.ui
+	COMMENT "Generating ui_podofoaboutdlg.{cpp,h}"
+	)
+
+
+ADD_CUSTOM_COMMAND(
+	OUTPUT ui_podofobrowserbase.h ui_podofobrowserbase.cpp
+	COMMAND ${QT_UIC3_EXECUTABLE} -o ui_podofobrowserbase.h
+				      podofobrowserbase.ui
+	COMMAND ${QT_UIC3_EXECUTABLE} -o ui_podofobrowserbase.cpp
+				      -impl ui_podofobrowserbase.h
+				      podofobrowserbase.ui
+	COMMENT "Generating ui_podofobrowserbase.{cpp,h}"
+	)
+
 ADD_EXECUTABLE(podofobrowser
-	main.cpp
-	pdflistviewitem.cpp
+	ui_podofobrowserbase.cpp
+	ui_podofoaboutdlg.cpp
 	podofobrowser.cpp
-	${podofobrowser_UIS_H}
+	pdflistviewitem.cpp
+	main.cpp
 	${podofobrowser_MOC_SRCS}
 	)
 

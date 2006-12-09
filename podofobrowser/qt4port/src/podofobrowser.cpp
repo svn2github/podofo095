@@ -20,8 +20,8 @@
 
 
 #include "podofobrowser.h"
+#include "ui_podofoaboutdlg.h"
 #include "pdflistviewitem.h"
-#include "podofoaboutdlg.h"
 
 #include <qapplication.h>
 #include <qcursor.h>
