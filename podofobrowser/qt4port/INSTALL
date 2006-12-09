@@ -1,5 +1,6 @@
 The Qt4 port of PoDoFoBrowser is best built with CMake. You will need 
-at least CMake 2.5.x, currently only available from CMake CVS.
+at least CMake 2.5.x, currently only available from CMake CVS. PoDoFo must have
+been built with CMake.
 
 cmake -G "Unix Makefiles" \
 	-DPoDoFo_DIRECTORY=/path/to/podofo_build_dir \
@@ -27,7 +28,8 @@ this process, as the authors do not have easy access to this configuration.
 Note that PoDoFoBrowser currently only builds against a PoDoFo build tree,
 not an installed copy of the library.
 
-You may also be able to build PoDoFoBrowser with qmake.
+You may also be able to build PoDoFoBrowser with qmake, but this is neither
+well tested nor really supported.
 
 	qmake
 	make

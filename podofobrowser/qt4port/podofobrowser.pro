@@ -1,25 +1,28 @@
 TEMPLATE = app
-CONFIG += qt
+
+# This project file WILL NOT WORK as written.
+# you must update it to suit your system and may also need to make
+# changes for your Qt version. qmake builds are not tested, see
+# INSTALL for instructions on using CMake to build podofobrowser .
+
+CONFIG = uic3 debug qt windows exceptions stl
 QT += qt3support
 TARGET = 
 DEFINES += USING_SHARED_PODOFO
 DEPENDPATH += .
-INCLUDEPATH += . src d:\developer\podofo\src d:\developer\scribus\gnuwin32\include d:\developer\scribus\gnuwin32\include\freetype2
+INCLUDEPATH += . c:\developer\podofo\src c:\developer\gnuwin32\include c:\developer\gnuwin32\include\freetype2
 
-unix:LIBS +=
-win32:LIBS += d:/developer/podofo-mingw/src/libpodofo.dll.a
+unix:LIBS += -lpodofo
+win32:LIBS += C:/developer/podofo-debug-mingw/src/libpodofo.dll.a
 
-HEADERS += \
-	src/pdflistviewitem.h \
-	src/podofobrowser.h \
-	src/podofoaboutdlg.h \
-	src/podofobrowserbase.h
-FORMS += \
+FORMS = \
 	src/podofoaboutdlg.ui \
 	src/podofobrowserbase.ui
+HEADERS += \
+	src/pdflistviewitem.h \
+	src/podofobrowser.h
 SOURCES += \
 	src/main.cpp \
 	src/pdflistviewitem.cpp \
-	src/podofobrowser.cpp \
-	src/podofoaboutdlg.cpp \
-	src/podofobrowserbase.cpp
+	src/podofobrowser.cpp
+
