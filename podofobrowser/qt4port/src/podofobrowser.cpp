@@ -441,10 +441,10 @@ bool PoDoFoBrowser::saveObject()
             }
 
 
-            pszText = tableKeys->text( i, 1 ).latin1();
+            QByteArray bytes( tableKeys->text( i, 1 ).toLatin1() );
 
             try {
-                var.Parse( pszText );
+		PdfTokenizer(bytes, bytes.size()).GetNextVariant(var);
             } catch( PdfError & e ) {
                 QString msg = QString("\"%1\" is no valid PDF datatype.\n").arg( pszText );
                 e.SetErrorInformation( msg.latin1() );
@@ -459,15 +459,16 @@ bool PoDoFoBrowser::saveObject()
         // first check wether all keys are valid
         for( i=0;i<tableKeys->numRows();i++ )
         {
-            var.Parse( tableKeys->text( i, 1 ).latin1() );
+	    QByteArray bytes( tableKeys->text( i, 1 ).toLatin1() );
+	    PdfTokenizer(bytes, bytes.size()).GetNextVariant(var);
             m_pCurObject->GetDictionary().AddKey( PdfName( tableKeys->text( i, 0 ).latin1() ), var );
         }
     }
     else
     {
-        pszText = tableKeys->text( 0, 0 ).latin1();
+        QByteArray bytes( tableKeys->text( 0, 0 ).toLatin1() );
         try {
-            var.Parse( pszText );
+	    PdfTokenizer(bytes, bytes.size()).GetNextVariant(var);
         } catch ( PdfError & e ) {
             podofoError( eCode );
             return false;
