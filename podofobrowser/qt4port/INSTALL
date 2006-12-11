@@ -1,3 +1,23 @@
+---- Dependencies ----
+
+podofobrowser svn generally requires PoDoFo svn to build and run. You will also
+need an installed copy of TrollTech's Qt library. Linux users should make sure
+the -dev or -devel package for Qt is installed too.
+
+Windows users will need the MinGW compilation environment. The Qt installer will
+download and install this for you if you don't already have it.
+
+The open source version of Qt4 does not support building with Visual Studio.
+PoDoFoBrowser should build fine with CMake and Visual Studio if you are using
+a version of Qt that supports this configuration. Please report any issues with
+this process, as the authors do not have easy access to this configuration.
+
+Note that because the gcc and MSVC++ C++ APIs are incompatible (as are the ABIs
+of most other C++ compilers) you must build podofobrowser with the same
+compiler you used to build podofo.
+
+---- CMake ----
+
 The Qt4 port of PoDoFoBrowser is best built with CMake. You will need 
 at least CMake 2.5.x, currently only available from CMake CVS. PoDoFo must have
 been built with CMake.
@@ -20,19 +40,23 @@ cmake -G "MinGW Makefiles"
 	-DCMAKE_INCLUDE_PATH=c:\progra~1\gnuwin32\include
 	-DCMAKE_LIBRARY_PATH=c:\progra~1\gnuwin32\lib
 
-The open source version of Qt4 does not support building with Visual Studio.
-PoDoFoBrowser should build fine with CMake and Visual Studio if you are using
-a version of Qt that supports this configuration. Please report any issues with
-this process, as the authors do not have easy access to this configuration.
-
 Note that PoDoFoBrowser currently only builds against a PoDoFo build tree,
 not an installed copy of the library.
 
-You may also be able to build PoDoFoBrowser with qmake, but this is neither
-well tested nor really supported.
+---- QMake ----
+
+You may also be able to build PoDoFoBrowser with qmake. You MUST edit the
+project file to reflect your local configuration. In particular, be sure to
+update INCLUDEPATH and :LIBS . Also be sure that DEFINES contains
+USING_SHARED_PODOFO if and only if you are building against a copy of podofo
+that was compiled as a shared library.
+
+Once you've updated the project file and (if necessary) ensured your compiler
+and qmake are on the PATH, run:
 
 	qmake
 	make
-	su
 	make install
 
+UNIX and Mac OS X users may need to use `sudo' or `su' to get the permissions
+required to run `make install'.
