@@ -25,7 +25,7 @@ been built with CMake.
 cmake -G "Unix Makefiles" \
 	-DPoDoFo_DIR=/path/to/podofo_build_dir \
 	-DCMAKE_INCLUDE_PATH=/path/to/extra/includes \
-	-DCMAKE_LIBRARY_PATH=/path/to/extra/libraries \
+	-DCMAKE_LIBRARY_PATH=/path/to/extra/libraries
 
 Windows users can also build PoDoFoBrowser using CMake. You will need
 a PoDoFo build tree and an installed copy of Qt4. Set QTDIR to point to your
