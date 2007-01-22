@@ -572,7 +572,7 @@ void PoDoFoBrowser::slotExportStream()
 
 void PoDoFoBrowser::toolsToHex()
 {
-    PdfHexFilter   filter;
+    const PdfFilter * const hexfilter = PdfFilterFactory::Create(ePdfFilter_ASCIIHexDecode);
 
     char* pBuffer = NULL;
     long  lLen    = 0;
@@ -581,7 +581,7 @@ void PoDoFoBrowser::toolsToHex()
     if( QString::null != text ) 
     {
         try {
-            filter.Encode( text.latin1(), text.length(), &pBuffer, &lLen );
+            hexfilter->Encode( text.latin1(), text.length(), &pBuffer, &lLen );
         } catch( PdfError & e ) {
             podofoError( e );
             return;
@@ -594,7 +594,7 @@ void PoDoFoBrowser::toolsToHex()
 
 void PoDoFoBrowser::toolsFromHex()
 {
-    PdfHexFilter   filter;
+    const PdfFilter * const hexfilter = PdfFilterFactory::Create(ePdfFilter_ASCIIHexDecode);
 
     char* pBuffer = NULL;
     long  lLen    = 0;
@@ -603,7 +603,7 @@ void PoDoFoBrowser::toolsFromHex()
     if( QString::null != text ) 
     {
         try {
-            filter.Decode( text.latin1(), text.length(), &pBuffer, &lLen );
+            hexfilter->Decode( text.latin1(), text.length(), &pBuffer, &lLen );
         } catch( PdfError & e ) {
             podofoError( e );
             return;
