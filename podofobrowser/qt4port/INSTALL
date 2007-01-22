@@ -18,30 +18,30 @@ compiler you used to build podofo.
 
 ---- CMake ----
 
-The Qt4 port of PoDoFoBrowser is best built with CMake. You will need 
-at least CMake 2.5.x, currently only available from CMake CVS. PoDoFo must have
-been built with CMake.
+The Qt4 port of PoDoFoBrowser is best built with CMake version 2.4 or newer
+(CMake 2.5 from CMake CVS is best).
 
 cmake -G "Unix Makefiles" \
-	-DPoDoFo_DIR=/path/to/podofo_build_dir \
+	-DLIBPODOFO_DIR=/path/to/podofo_install_dir \
 	-DCMAKE_INCLUDE_PATH=/path/to/extra/includes \
 	-DCMAKE_LIBRARY_PATH=/path/to/extra/libraries
 
-Windows users can also build PoDoFoBrowser using CMake. You will need
-a PoDoFo build tree and an installed copy of Qt4. Set QTDIR to point to your
-Qt install directory, ensure MinGW is on your PATH, and make sure to set
-CMAKE_INCLUDE_PATH and CMAKE_LIBRARY_PATH to point to the same libraries
-you used to build PoDoFo against (important!).
+Windows users can also build PoDoFoBrowser using CMake. You will need an
+installed copy of PoDoFo and will need to have Qt 4 installed. Set QTDIR to
+point to your Qt install directory, ensure MinGW is on your PATH, and make sure
+to set CMAKE_INCLUDE_PATH and CMAKE_LIBRARY_PATH to point to the same libraries
+you used to build PoDoFo against (important!). LIBPODOFO_DIR should point to the
+PoDoFo installation directory (NOT the build directory, which WILL NOT WORK).
 
 SET QTDIR=c:\qt\4.2.1
 SET PATH=c:\mingw\bin;%PATH%
 cmake -G "MinGW Makefiles"
-	-DPoDoFo_DIR=c:\developer\podofo_build_dir
+	-DLIBPODOFO_DIR=c:\developer\podofo_install_dir
 	-DCMAKE_INCLUDE_PATH=c:\progra~1\gnuwin32\include
 	-DCMAKE_LIBRARY_PATH=c:\progra~1\gnuwin32\lib
 
-Note that PoDoFoBrowser currently only builds against a PoDoFo build tree,
-not an installed copy of the library.
+Note that PoDoFoBrowser currently only builds against an installed copy of PoDoFo,
+not the podofo build tree.
 
 ---- QMake ----
 
