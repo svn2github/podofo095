@@ -35,28 +35,23 @@ ADD_EXECUTABLE(podofobrowser
 	${podofobrowser_MOC_SRCS}
 	)
 
-# Determine the right dependency list to add to the linker, depending
-# on whether we're linking a shared or static PoDoFo
-IF("${PODOFO_DEPEND_TARGET}" STREQUAL "podofo_shared")
-	MESSAGE("Linking to shared PoDoFo")
-	SET(podofo_DEPENDS ${podofo_shared_LIB_DEPENDS})
-ELSE("${PODOFO_DEPEND_TARGET}" STREQUAL "podofo_shared")
-	IF("${PODOFO_DEPEND_TARGET}" STREQUAL "podofo_static")
-		MESSAGE("Linking to static PoDoFo")
-		SET(podofo_DEPENDS ${podofo_static_LIB_DEPENDS})
-	ELSE("${PODOFO_DEPEND_TARGET}" STREQUAL "podofo_static")
-		MESSAGE(FATAL_ERROR "PODOFO_DEPEND_TARGET '${PODOFO_DEPEND_TARGET}' invalid")
-	ENDIF("${PODOFO_DEPEND_TARGET}" STREQUAL "podofo_static")
-ENDIF("${PODOFO_DEPEND_TARGET}" STREQUAL "podofo_shared")
+IF(NOT WIN32)
+	SET(extra_libs ${LIBFONTCONFIG_LIB})
+ELSE(NOT WIN32)
+	SET(extra_libs)
+ENDIF(NOT WIN32)
 
 TARGET_LINK_LIBRARIES(podofobrowser
 	${QT_LIBRARIES}
-	${PoDoFo_LIB}
-	${podofo_DEPENDS}
+	${LIBPODOFO_LIB}
+	${LIBFREETYPE_LIB}
+	${extra_libs}
+	${LIBJPEG_LIB}
+	${LIBZ_LIB}
 	)
 
 ADD_DEFINITIONS(
-	${PODOFO_CFLAGS}
+	${LIBPODOFO_CFLAGS}
 	${QT_DEFINITIONS}
 	-DQT_QT3SUPPORT_LIB
 	-DQT3_SUPPORT

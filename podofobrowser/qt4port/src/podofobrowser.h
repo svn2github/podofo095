@@ -28,7 +28,7 @@
 #include <Qt3Support>
 
 #include "ui_podofobrowserbase.h"
-#include <podofo.h>
+#include <podofo/podofo.h>
 #include <qstring.h>
 
 class Q3ListViewItem;

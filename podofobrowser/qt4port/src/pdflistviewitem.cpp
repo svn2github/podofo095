@@ -20,7 +20,7 @@
 
 #include "pdflistviewitem.h"
 
-#include <podofo.h>
+#include <podofo/podofo.h>
 
 #include <string>
 
