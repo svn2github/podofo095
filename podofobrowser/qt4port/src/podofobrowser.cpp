@@ -733,7 +733,9 @@ void PoDoFoBrowser::loadObjects()
 
 void PoDoFoBrowser::helpAbout()
 {
-    PodofoAboutDlg* dlg = new PodofoAboutDlg( this );
+    QDialog* dlg = new QDialog( this );
+    Ui::PodofoAboutDlg dlgUi;
+    dlgUi.setupUi(dlg);
     dlg->show();
 }
 
