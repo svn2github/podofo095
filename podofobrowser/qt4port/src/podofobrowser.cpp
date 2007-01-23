@@ -58,8 +58,12 @@ private:
 };
 
 PoDoFoBrowser::PoDoFoBrowser()
-    : PoDoFoBrowserBase( 0, "PoDoFoBrowser", Qt::WDestructiveClose ), m_pDocument( NULL )
+    : Q3MainWindow(0, "PoDoFoBrowser", Qt::WDestructiveClose ),
+      PoDoFoBrowserBase(),
+      m_pDocument( NULL )
 {
+    setupUi(this);
+
     clear();
 
     listObjects->setSorting( -1 );

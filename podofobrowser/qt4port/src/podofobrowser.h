@@ -33,7 +33,7 @@
 
 class Q3ListViewItem;
 
-class PoDoFoBrowser: public PoDoFoBrowserBase
+class PoDoFoBrowser: public Q3MainWindow, private Ui::PoDoFoBrowserBase
 {
     Q_OBJECT
 
@@ -41,7 +41,7 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
     PoDoFoBrowser();
     ~PoDoFoBrowser();
 
- private:
+ private slots:
     void fileNew();
 
     void fileOpen();
@@ -64,6 +64,15 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
 
     void loadAllObjects();
 
+    void objectChanged( Q3ListViewItem* );
+    void slotImportStream();
+    void slotExportStream();
+    void slotTableChanged();
+
+    void helpAbout();
+
+ private:
+
     void loadConfig();
     void saveConfig();
 
@@ -76,15 +85,6 @@ class PoDoFoBrowser: public PoDoFoBrowserBase
 
     void streamChanged( PoDoFo::PdfObject* );
 
-    void helpAbout();
-
- private slots:
-    void objectChanged( Q3ListViewItem* );
-    void slotImportStream();
-    void slotExportStream();
-    void slotTableChanged();
-
- private:
     void loadObjects();
     bool trySave();
 

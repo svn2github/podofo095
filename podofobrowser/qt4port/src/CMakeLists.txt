@@ -1,29 +1,21 @@
-ADD_CUSTOM_COMMAND(
-	OUTPUT ui_podofobrowserbase.h ui_podofobrowserbase.cpp
-	COMMAND ${QT_UIC3_EXECUTABLE} -o ui_podofobrowserbase.h
-				      podofobrowserbase.ui
-	COMMAND ${QT_UIC3_EXECUTABLE} -o ui_podofobrowserbase.cpp
-				      -impl ui_podofobrowserbase.h
-				      podofobrowserbase.ui
-	COMMENT "Generating ui_podofobrowserbase.{cpp,h}"
+QT4_WRAP_UI(podofobrowser_UIC_HEADERS
+	podofoaboutdlg.ui
+	podofobrowserbase.ui
 	)
-
-QT4_WRAP_UI(podofobrowser_UIC_HEADERS podofoaboutdlg.ui)
 
 SET(podofobrowser_MOC_HEADERS
 	podofobrowser.h
-	ui_podofobrowserbase.h
 	)
 QT4_WRAP_CPP(podofobrowser_MOC_SRCS ${podofobrowser_MOC_HEADERS})
 
 # WTF does this not get done for us?
 SET_SOURCE_FILES_PROPERTIES(
 	podofobrowser.cpp
-	OBJECT_DEPENDS ${podofobrowser_UIC_HEADERS}
+	PROPERTIES
+	OBJECT_DEPENDS "${podofobrowser_UIC_HEADERS}"
 	)
 
 ADD_EXECUTABLE(podofobrowser
-	ui_podofobrowserbase.cpp
 	podofobrowser.cpp
 	pdflistviewitem.cpp
 	main.cpp

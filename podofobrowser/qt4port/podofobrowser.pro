@@ -1,16 +1,16 @@
 TEMPLATE = app
 
-CONFIG += debug qt windows exceptions stl uic3
+CONFIG += debug qt windows exceptions stl
 QT += qt3support
 TARGET = src/podofobrowser
 DEFINES += USING_SHARED_PODOFO
 DEPENDPATH += .
-INCLUDEPATH += . c:\developer\podofo\src c:\developer\gnuwin32\include c:\developer\gnuwin32\include\freetype2
+INCLUDEPATH += . c:\PROGRA~1\podofo\include c:\developer\gnuwin32\include c:\developer\gnuwin32\include\freetype2
 
 unix:LIBS += -lpodofo
-win32:LIBS += C:/developer/podofo-debug-mingw/src/libpodofo.dll.a
+win32:LIBS += C:/PROGRA~1/podofo/lib/libpodofo.dll.a
 
-FORMS3 = \
+FORMS = \
 	src/podofoaboutdlg.ui \
 	src/podofobrowserbase.ui
 HEADERS += \
