@@ -25,7 +25,7 @@ ADD_EXECUTABLE(podofobrowser
 IF(NOT WIN32)
 	SET(extra_libs ${LIBFONTCONFIG_LIB})
 ELSE(NOT WIN32)
-	SET(extra_libs)
+	SET(extra_libs kernel32 user32 gdi32 winspool comdlg32 advapi32 shell32 ole32 oleaut32 uuid WS2_32)
 ENDIF(NOT WIN32)
 
 TARGET_LINK_LIBRARIES(podofobrowser
