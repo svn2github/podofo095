@@ -1,0 +1,18 @@
+PoDoFo 0.4
+    - Do not inherit from PdfTokenizer
+
+FUTURE
+    - PdfString needs to handle (optionally?) encoding & decoding of Unicode strings
+    - More filters (read & write)
+    - Content stream parsing
+    - Support for attaching an ICC profile to an image or content stream
+    - Support for reading & writing encrypted PDFs
+    - Some more drawing routines (tiles, save and rstore?) also finish cleanup
+      the existing ones revamp color support to be more general & support more
+      types
+    - Interactive forms support
+    - PNG predictor functions in filters
+    - CMYK image handling for podofoimgextract, images in different colour
+      spaces in general.
+    - Delay resource acquisition for PdfInputDevice until required to support
+      its use as a delayed stream source without holding too many open files.
