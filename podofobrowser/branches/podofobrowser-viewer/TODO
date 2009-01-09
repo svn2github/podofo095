@@ -1,0 +1,33 @@
+BUGS:
+	- Stream viewer not blanked when no stream avail
+	- No key name editing for dictionaries
+	- No indirect object creation
+	- Simple data edits (ie non-structural) may not take account of aliasing
+
+FEATURES:
+	- Edit in PDF syntax or decoded text form for strings, names
+	- Support switching between hex, ascii stream views, always default to hex?
+	- HexView: edit support
+	- HexView: Progressive reading of filtered streams
+	- HexView: Random I/O on unfiltered streams
+	- HexView: File-backed storage of stream buffer when grows too large
+	- Efficient ASCII stream view implementing a text document model on top of the
+          QIODevice* implementations offered for hexview?
+	- Search for objects by type, value. Must handle reference cycles.
+	- Related to above, find list of all objects that reference a given
+	  indirect object, present by tabbing list open for all references,
+	  highlighting referencing cells (nodes need highlight flag?)
+	- Enumerate and jump to interesting structures in PDF like fonts,
+	  images, pages, etc.
+	- Image browser/thumbnailer with save image and replace image operations
+	- Font extraction and replacement
+	- Search for text in content streams
+	- "Clone unique" for multiply-referenced indirect objects
+	- Cycle-friendly counting of references to indirect objects so user
+	  can tell multiply-referenced vs unique
+
+FUTURE:
+	- PoDoFoPdfInfo integrated in GUI
+	- "Check PDF" (very simple PDF validation - should be Qt independent
+	  and use underlying document not our model implementation).
+	- GUI support for doc merge, page insert, page extract, etc.
