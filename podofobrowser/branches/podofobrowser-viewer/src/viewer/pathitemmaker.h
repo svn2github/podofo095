@@ -17,3 +17,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifndef PATHITEMMAKER_H 
+#define PATHITEMMAKER_H
+
+#include "viewer/core.h"
+
+class PathItemMaker : public GraphicItemMakerBase
+{
+	QStringList supportedOps;
+	public:
+		PathItemMaker();
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+		bool support(const QString& op) const ;
+};
+
+
+#endif // PATHITEMMAKER_H
+

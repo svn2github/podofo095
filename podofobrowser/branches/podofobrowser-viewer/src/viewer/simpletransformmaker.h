@@ -17,3 +17,18 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef SIMPLETRANSFORMMAKER_H
+#define SIMPLETRANSFORMMAKER_H
+
+#include "viewer/core.h"
+
+class SimpleTransformMaker : public GraphicItemMakerBase
+{
+	QStringList supportedOps;
+	public:
+		SimpleTransformMaker();
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+		bool support(const QString& op) const ;
+};
+
+#endif // SIMPLETRANSFORMMAKER_H

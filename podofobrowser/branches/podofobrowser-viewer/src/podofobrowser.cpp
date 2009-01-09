@@ -20,6 +20,7 @@
 
 #include "podofobrowser.h"
 #include "podofoutil.h"
+#include "podofoview.h"
 #include "backgroundloader.h"
 #include "ui_podofoaboutdlg.h"
 #include "ui_podofofinddlg.h"
@@ -31,6 +32,7 @@
 
 #include <QApplication>
 #include <QCursor>
+#include <QDebug>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QLabel>
@@ -41,6 +43,7 @@
 #include <QSettings>
 #include <QSplitter>
 #include <QStatusBar>
+#include <QTextCodec>
 #include <QTextEdit>
 #include <QBuffer>
 
@@ -104,7 +107,11 @@ PoDoFoBrowser::PoDoFoBrowser( const QString & filename )
     connect( actionReplace,       SIGNAL( activated() ), this, SLOT( editReplace() ) );
     connect( actionGotoObject,    SIGNAL( activated() ), this, SLOT( editGotoObject() ) );
     connect( actionGotoPage,      SIGNAL( activated() ), this, SLOT( editGotoPage() ) );
+    
+    connect( checkEditable, SIGNAL(toggled(bool)), this, SLOT(slotSetStreamEditable(bool)) );
+    connect( commitButton, SIGNAL(clicked()), this, SLOT(slotCommitStream()) );
 
+    connect( reloadButton, SIGNAL(clicked()), podofoView, SLOT(reloadPage()));
     show();
     statusBar()->showMessage( tr("Ready"), 2000 );
 
@@ -179,8 +186,11 @@ void PoDoFoBrowser::loadConfig()
     list << width()/3;
     list << (width()/3 * 2);
 
-    splitter2->setSizes( list );
-    splitter3->setSizes( list );
+    m_codecForStream = QTextCodec::codecForName(settings.value( QString::fromUtf8("/Stream/Codec"),QString::fromUtf8("ISO 8859-1") ).toString().toUtf8());
+    // little convenience
+    settings.setValue(QString::fromUtf8("/Stream/Codec"), m_codecForStream->name());
+//     splitter2->setSizes( list );
+//     splitter3->setSizes( list );
 
     this->resize( w, h );
 
@@ -337,120 +347,144 @@ void PoDoFoBrowser::UpdateMenus()
 }
 
 // Triggered when the selected object in the list view changes
-void PoDoFoBrowser::treeSelectionChanged( const QModelIndex & current, const QModelIndex & previous )
+void PoDoFoBrowser::treeSelectionChanged ( const QModelIndex & current, const QModelIndex & previous )
 {
-    UpdateMenus();
+// 	qDebug()<<"treeSelectionChanged"; 
+	UpdateMenus();
 
-    textStream->clear();
-    buttonImport->setEnabled( false );
-    buttonExport->setEnabled( false );
-    textStream->setEnabled(false);
-        
-    hexView->clear();
-    delete m_pByteArrayIO;
-    m_pByteArrayIO = NULL;
-    delete m_pByteArray;
-    m_pByteArray = NULL;
+	// make keyboard navigation easier, especially in Catalog View mode
+	// hopefully this does not slow down to much.
+	// CR: We may need a more efficient approach to this as the tree grows,
+	// since it does slow down a lot.
+	// DS: Disabled because it is annyoing so that the column is always resized
+	// even if you have set a manual columnwidth
+	// listObjects->resizeColumnToContents( 0 );
 
-    // make keyboard navigation easier, especially in Catalog View mode
-    // hopefully this does not slow down to much.
-    // CR: We may need a more efficient approach to this as the tree grows,
-    // since it does slow down a lot.
-    // DS: Disabled because it is annyoing so that the column is always resized
-    // even if you have set a manual columnwidth
-    // listObjects->resizeColumnToContents( 0 );
+	PdfObjectModel * const model = static_cast<PdfObjectModel*> ( listObjects->model() );
+	if ( !model )
+	{
+		labelStream->setText ( tr ( "No document available" ) );
+		return;
+	}
 
-    PdfObjectModel * const model = static_cast<PdfObjectModel*>(listObjects->model());
-    if (!model)
-    {
-        labelStream->setText( tr("No document available") );
-        return;
-    }
+	const PdfObject* object = model->GetObjectForIndex ( current );
+	if ( !object )
+	{
+		labelStream->setText ( tr ( "No object available" ) );
+		return;
+	}
 
-    const PdfObject* object = model->GetObjectForIndex(current);
-    if (!object)
-    {
-        labelStream->setText( tr("No object available") );
-        return;
-    }
+// 	if (showPreview->isChecked() )
+	{
+		PoDoFo::PdfName typeKey("Type");
+		PoDoFo::PdfName typePage("Page");
+		PoDoFo::PdfName parentKey("Parent");
+		if(object->IsDictionary() && (object->GetDictionary().GetKeyAsName(typeKey) == typePage))
+		{
+			podofoView->showPage(m_pDocument->GetPagesTree()->GetPage(object->Reference()), m_pDocument);
+			stackedWidget->setCurrentWidget ( pageView );
+			return;
+		}
+	}
+	
+	textStream->clear();
+	buttonImport->setEnabled ( false );
+	buttonExport->setEnabled ( false );
+	textStream->setEnabled ( false );
 
-    const PdfReference & ref (object->Reference());
-    if (!ref.IsIndirect())
-    {
-        labelStream->setText( tr("Object is not indirect so it can not have a stream") );
-        return;
-    }
+	hexView->clear();
+	delete m_pByteArrayIO;
+	m_pByteArrayIO = NULL;
+	delete m_pByteArray;
+	m_pByteArray = NULL;
 
-    try {
-        if (!object->HasStream())
-        {
-            labelStream->setText( tr("Object %1 %2 obj has no stream").arg(ref.ObjectNumber()).arg(ref.GenerationNumber()) );
-            return;
-        }
-    }
-    catch ( PdfError & e ) {
-        labelStream->setText( tr("Error while testing for object stream") );
-        podofoError( e );
-        return;
-    }
+	
+	const PdfReference & ref ( object->Reference() );
+	if ( !ref.IsIndirect() )
+	{
+		labelStream->setText ( tr ( "Object is not indirect so it can not have a stream" ) );
+		return;
+	}
 
-    // If we get this far, we can safely import a new stream even if 
-    // the current stream contents are invalid.
-    buttonImport->setEnabled( true );
+	try
+	{
+		if ( !object->HasStream() )
+		{
+			labelStream->setText ( tr ( "Object %1 %2 obj has no stream" ).arg ( ref.ObjectNumber() ).arg ( ref.GenerationNumber() ) );
+			return;
+		}
+	}
+	catch ( PdfError & e )
+	{
+		labelStream->setText ( tr ( "Error while testing for object stream" ) );
+		podofoError ( e );
+		return;
+	}
 
-    // XXX this should be in the model
-    const PdfStream * const stream = object->GetStream();
-    char * pBuf = NULL;
-    long lLen = -1;
-    try {
-        stream->GetFilteredCopy( &pBuf, &lLen );
-    } catch( PdfError & e ) {
-        labelStream->setText( tr("Unable to filter object stream") );
-        podofoError( e );
-        return;
-    }
+	// If we get this far, we can safely import a new stream even if
+	// the current stream contents are invalid.
+	buttonImport->setEnabled ( true );
 
-    assert(pBuf);
-    assert(lLen >= 0);
+	// XXX this should be in the model
+	const PdfStream * const stream = object->GetStream();
+	char * pBuf = NULL;
+	long lLen = -1;
+	try
+	{
+		stream->GetFilteredCopy ( &pBuf, &lLen );
+	}
+	catch ( PdfError & e )
+	{
+		labelStream->setText ( tr ( "Unable to filter object stream" ) );
+		podofoError ( e );
+		return;
+	}
 
-    // Quick and dirty binary-ness test
-    // TODO: sane encoding-safe approach to binary data
-    // TODO: hex editor
-    QString displayInfo;
-    const bool isBinary = std::find(pBuf, pBuf+lLen, 0) != pBuf+lLen;
-    if (!isBinary)
-    {
-        // TODO FIXME XXX AUUGH! Encoding assumption like nothing ever
-        // seen before!
-        QString data = QString::fromAscii(pBuf, lLen);
-        textStream->setEnabled(true);
-        textStream->setText( data );
-        displayInfo = tr("displayed in full");
-        stackedWidget->setCurrentWidget( pageStream );
-    }
-    else
-    {
-	// Read the whole stream into memory and point the hex editor at it.
-	// Later we'll support progressive I/O.
-        m_pByteArray = new QByteArray( pBuf, lLen );
-	m_pByteArrayIO = new QBuffer( m_pByteArray );
-	// Open for random R/W I/O
-	m_pByteArrayIO->open(QIODevice::ReadWrite);
-	// and tell the hex editor to display the new data
-        hexView->setData( m_pByteArrayIO, m_pByteArrayIO->size() );
-        displayInfo = tr("contains binary data");
-        stackedWidget->setCurrentWidget( pageHexView );
-    }
-    free( pBuf );
+	assert ( pBuf );
+	assert ( lLen >= 0 );
 
-    labelStream->setText( tr("Stream from object %1 %2 obj of unfiltered length %3 bytes %4")
-            .arg(ref.ObjectNumber())
-            .arg(ref.GenerationNumber())
-            .arg(lLen)
-            .arg(displayInfo)
-            );
-    buttonImport->setEnabled( true );
-    buttonExport->setEnabled( true );
+	// Quick and dirty binary-ness test
+	// TODO: sane encoding-safe approach to binary data
+	// TODO: hex editor
+	QString displayInfo;
+	const bool isBinary = std::find ( pBuf, pBuf+lLen, 0 ) != pBuf+lLen;
+	if ( !isBinary )
+	{
+		qDebug() << "Not Binary";
+		// TODO FIXME XXX AUUGH! Encoding assumption like nothing ever
+		// seen before!
+		QByteArray pArray(pBuf, lLen);
+// 			QString data = QString::fromAscii ( pBuf, lLen );
+		QString data = m_codecForStream->toUnicode(pArray);
+			textStream->setEnabled ( true );
+			textStream->setText ( data );
+			displayInfo = tr ( "displayed in full" );
+			stackedWidget->setCurrentWidget ( pageStream );
+	}
+	else
+	{
+		qDebug() << "Binary";
+		// Read the whole stream into memory and point the hex editor at it.
+		// Later we'll support progressive I/O.
+		m_pByteArray = new QByteArray ( pBuf, lLen );
+		m_pByteArrayIO = new QBuffer ( m_pByteArray );
+		// Open for random R/W I/O
+		m_pByteArrayIO->open ( QIODevice::ReadWrite );
+		// and tell the hex editor to display the new data
+		hexView->setData ( m_pByteArrayIO, m_pByteArrayIO->size() );
+		displayInfo = tr ( "contains binary data" );
+		stackedWidget->setCurrentWidget ( pageHexView );
+	}
+	free ( pBuf );
+
+	labelStream->setText ( tr ( "Stream from object %1 %2 obj of unfiltered length %3 bytes %4" )
+	                       .arg ( ref.ObjectNumber() )
+	                       .arg ( ref.GenerationNumber() )
+	                       .arg ( lLen )
+	                       .arg ( displayInfo )
+	                     );
+	buttonImport->setEnabled ( true );
+	buttonExport->setEnabled ( true );
 
 }
 
@@ -1067,5 +1101,69 @@ void PoDoFoBrowser::GotoObject()
                                       m_gotoReference.GenerationNumber() ) );
     else
         listObjects->setCurrentIndex( model->index( index, 0 ) );
+}
+
+void PoDoFoBrowser::slotSetStreamEditable(bool e)
+{
+	if(e)
+	{
+		textStream->setReadOnly(false);
+		textStream->setTextInteractionFlags(Qt::TextEditorInteraction);
+	}
+	else
+	{
+		textStream->setReadOnly(true);
+		textStream->setTextInteractionFlags(Qt::TextBrowserInteraction);
+	}
+}
+
+void PoDoFoBrowser::slotCommitStream()
+{
+	QModelIndex idx = GetSelectedItem();
+	if (!idx.isValid()) return; // shouldn't happen
+
+	PdfObjectModel * const model = static_cast<PdfObjectModel*>(listObjects->model());
+
+    // TODO: if the stream is a file stream, convert it to a mem
+    // stream while retaining all dictionary attributes.
+	const PdfObject * obj = model->GetObjectForIndex(idx);
+	if (!obj->HasStream())
+		return;
+    // dodgy!
+	
+	QByteArray cs(m_codecForStream->fromUnicode(textStream->toPlainText()));
+	
+	PdfStream * stream = const_cast<PdfObject*>(obj)->GetStream();
+	stream->Set(cs.data(), cs.size());
+
+	
+
+//     // Load the stream in streamChunkSize byte chunks.
+// 	static const qint64 streamChunkSize=1024*64;
+// 	char* pBuf = static_cast<char*>(malloc( streamChunkSize*sizeof(char) ));
+// 
+// 	qint64 bytesRead = 0;
+// 	try {
+// 	// Clear the stream and begin appending, with all data being encoded according
+// 	// to the current stream dictionary's filters.
+// 		stream->BeginAppend( PdfFilterFactory::CreateFilterList(obj), true );
+// 		do
+// 		{
+// 			bytesRead = f.read(pBuf, streamChunkSize);
+// 			assert(bytesRead != -1); // error not handled properly
+// 			if (bytesRead > 0)
+// 				stream->Append(pBuf, bytesRead);
+// 		}
+// 		while (bytesRead > 0);
+// 		stream->EndAppend();
+// 	} catch (PdfError& e) {
+// 		free(pBuf);
+// 		podofoError( e );
+// 		return;
+// 	}
+// 	free(pBuf);
+
+	statusBar()->showMessage( tr("Stream Committed"), 2000 );
+
 }
 

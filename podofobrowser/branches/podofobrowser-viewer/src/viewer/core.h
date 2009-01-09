@@ -17,3 +17,65 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifndef VIEWER_CORE_H
+#define VIEWER_CORE_H
+
+#include <podofo/podofo.h>
+#include "graphicstate.h"
+
+#include <QByteArray>
+#include <QGraphicsView>
+#include <QList>
+#include <QMap>
+#include <QRectF>
+
+#include <QDebug>
+
+
+class QGraphicsScene;
+class QGraphicsItem;
+
+struct  PdfOperation
+{
+	QString key;
+	QList<PoDoFo::PdfVariant> operands;
+	
+	PdfOperation(const QString& k, const QList<PoDoFo::PdfVariant>& ops)
+	:key(k), operands(ops)
+	{}
+};
+typedef QList<PdfOperation> PdfContentStream;
+typedef QList<PdfOperation>::iterator PdfContentIterator;
+
+
+class GraphicItemMakerBase
+{
+	public:
+		GraphicItemMakerBase();
+		virtual ~GraphicItemMakerBase();
+		
+		virtual PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState) = 0;
+		virtual bool support(const QString& op) const {return false;}
+		
+	protected:
+		bool checkVarCount(unsigned int control, const QList<PoDoFo::PdfVariant>& ops) const 
+		{
+			return ( control == ops.count() ) ? true : false;
+		}
+};
+
+
+class NoOpMaker : public GraphicItemMakerBase
+{
+	public:
+		NoOpMaker(){}
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState)
+		{
+			return ++csIterator;
+		}
+		bool support(const QString& op) const {return true;}
+};
+
+
+#endif // VIEWER_CORE_H

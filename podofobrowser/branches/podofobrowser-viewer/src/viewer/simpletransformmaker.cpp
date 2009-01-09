@@ -17,3 +17,34 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#include "simpletransformmaker.h"
+
+// simple ctm
+SimpleTransformMaker::SimpleTransformMaker()
+{
+	supportedOps << QString::fromAscii ( "cm" );
+}
+
+bool SimpleTransformMaker::support ( const QString & op ) const
+{
+	return supportedOps.contains ( op );
+}
+
+PdfContentIterator SimpleTransformMaker::item ( PdfContentIterator csIterator, GraphicState & gState )
+{
+// 	qDebug()<<"SimpleTransformMaker"<<csIterator->key;
+	if ( checkVarCount ( 6, csIterator->operands ) )
+	{
+		double a ( csIterator->operands[0].GetReal() );
+		double b ( csIterator->operands[1].GetReal() );
+		double c ( csIterator->operands[2].GetReal() );
+		double d ( csIterator->operands[3].GetReal() );
+		double e ( csIterator->operands[4].GetReal() );
+		double f ( csIterator->operands[5].GetReal() );
+
+		QMatrix m ( a,b,c,d,e,f );
+		gState.cm = gState.cm * m;
+	}
+	return ++csIterator;
+}

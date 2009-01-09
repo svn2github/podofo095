@@ -17,3 +17,30 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifndef VIEWER_DISPATCHER_H
+#define VIEWER_DISPATCHER_H
+
+#include "viewer/core.h"
+
+#include <QMap>
+
+class Dispatcher
+{
+	Dispatcher();
+	~Dispatcher();
+	static Dispatcher * instance;
+	
+	
+	QMap<QString, GraphicItemMakerBase*> m_itemMakers;
+	GraphicItemMakerBase* NoOp;
+	
+	public:
+		static Dispatcher * getInstance();
+		
+		PdfContentIterator run(PdfContentIterator csIterator,  GraphicState& gState);
+		
+		GraphicItemMakerBase* getMaker(const QString& mname){return m_itemMakers.contains(mname) ? m_itemMakers[mname] : 0;}
+};
+
+#endif

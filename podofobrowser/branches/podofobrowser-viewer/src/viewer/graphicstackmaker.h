@@ -17,3 +17,21 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+#ifndef GRAPHICSTACKMAKER_H
+#define GRAPHICSTACKMAKER_H
+
+#include "viewer/core.h"
+
+
+class GraphicStackMaker :  public GraphicItemMakerBase
+{
+	QStringList supportedOps;
+	QList<GraphicState> m_stack;
+	public:
+		GraphicStackMaker();
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+		bool support(const QString& op) const ;
+};
+
+
+#endif // GRAPHICSTACKMAKER_H

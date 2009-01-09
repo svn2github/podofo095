@@ -17,3 +17,20 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifndef SIMPLECOLORMAKER_H
+#define SIMPLECOLORMAKER_H
+
+#include "viewer/core.h"
+
+class SimpleColorMaker: public GraphicItemMakerBase
+{
+	QStringList supportedOps;
+	public:
+		SimpleColorMaker();
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+		bool support(const QString& op) const ;
+};
+
+#endif // SIMPLECOLORMAKER_H
+

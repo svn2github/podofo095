@@ -82,6 +82,8 @@ class PoDoFoBrowser: public QMainWindow, private Ui::PoDoFoBrowserBase
     void editGotoPage();
 
     void viewRefreshView();
+    void slotSetStreamEditable(bool e);
+    void slotCommitStream();
 
 
  private:
@@ -125,6 +127,7 @@ class PoDoFoBrowser: public QMainWindow, private Ui::PoDoFoBrowserBase
     QTextDocument::FindFlags m_findFlags;
     QByteArray*           m_pByteArray;
     QIODevice*            m_pByteArrayIO;
+    QTextCodec*	m_codecForStream;
 };
 
 QModelIndex PoDoFoBrowser::GetSelectedItem()

@@ -17,3 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#include "graphicstackmaker.h"
+
+GraphicStackMaker::GraphicStackMaker()
+{
+	supportedOps << QString::fromAscii ( "q" )
+			<< QString::fromAscii ( "Q" );
+}
+
+bool GraphicStackMaker::support(const QString & op) const
+{
+	return supportedOps.contains ( op );
+}
+
+PdfContentIterator GraphicStackMaker::item(PdfContentIterator csIterator, GraphicState & gState)
+{
+// 	qDebug()<<"GraphicStackMaker"<<csIterator->key;
+	if(csIterator->key == QString::fromAscii("q"))
+	{
+		m_stack << gState;
+	}
+	else if(csIterator->key == QString::fromAscii("Q"))
+	{
+		if(!m_stack.isEmpty())
+		{
+			gState = m_stack.last();
+			m_stack.removeLast();
+		}
+	}
+	return ++csIterator;
+}
+

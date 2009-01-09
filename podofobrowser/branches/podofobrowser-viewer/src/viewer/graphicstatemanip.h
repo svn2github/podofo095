@@ -17,3 +17,22 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifndef GRAPHICSTATEMANIP_H
+#define GRAPHICSTATEMANIP_H
+
+#include "viewer/core.h"
+
+
+class GraphicStateManip :  public GraphicItemMakerBase
+{
+	QStringList supportedOps;
+	void loadGS(PdfContentIterator csIterator,  GraphicState& gState);
+	public:
+		GraphicStateManip();
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+		bool support(const QString& op) const ;
+};
+
+
+#endif //GRAPHICSTATEMANIP_H

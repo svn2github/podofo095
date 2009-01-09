@@ -5,33 +5,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>758</width>
-    <height>629</height>
+    <width>736</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="windowTitle" >
    <string>PoDoFo Browser</string>
   </property>
   <widget class="QWidget" name="widget" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>58</y>
-     <width>758</width>
-     <height>571</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" >
-    <property name="spacing" >
-     <number>6</number>
-    </property>
-    <property name="margin" >
-     <number>9</number>
-    </property>
-    <item>
+   <layout class="QGridLayout" name="gridLayout_3" >
+    <item row="0" column="0" >
      <widget class="QSplitter" name="splitter" >
       <property name="orientation" >
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QTreeView" name="listObjects" >
        <property name="mouseTracking" >
@@ -47,24 +33,18 @@
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QSplitter" name="splitter3" >
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="QSplitter" name="splitter2" >
-        <property name="orientation" >
-         <enum>Qt::Vertical</enum>
-        </property>
-        <widget class="QWidget" name="layout3" >
-         <layout class="QVBoxLayout" >
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <property name="margin" >
-           <number>0</number>
-          </property>
+      <widget class="QWidget" native="1" name="widget_2" >
+       <layout class="QGridLayout" name="gridLayout_5" >
+        <item row="0" column="0" >
+         <layout class="QHBoxLayout" name="horizontalLayout" >
           <item>
            <widget class="QLabel" name="textLabel1" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+              <horstretch>2</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text" >
              <string>Contents of the associated stream:</string>
             </property>
@@ -73,132 +53,165 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QLabel" name="labelStream" >
-            <property name="text" >
-             <string/>
-            </property>
-            <property name="wordWrap" >
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QStackedWidget" name="stackedWidget" >
-            <property name="currentIndex" >
-             <number>0</number>
-            </property>
-            <widget class="QWidget" name="pageStream" >
-             <property name="geometry" >
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>738</width>
-               <height>246</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout" >
-              <item>
-               <widget class="QTextEdit" name="textStream" >
-                <property name="undoRedoEnabled" >
-                 <bool>false</bool>
-                </property>
-                <property name="readOnly" >
-                 <bool>false</bool>
-                </property>
-                <property name="acceptRichText" >
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QWidget" name="pageHexView" >
-             <property name="geometry" >
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>738</width>
-               <height>246</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2" >
-              <item>
-               <widget class="QHexView" native="1" name="hexView" />
-              </item>
-             </layout>
-            </widget>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" >
-            <property name="spacing" >
-             <number>6</number>
-            </property>
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QPushButton" name="buttonImport" >
-              <property name="enabled" >
+         </layout>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="labelStream" >
+          <property name="text" >
+           <string/>
+          </property>
+          <property name="wordWrap" >
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" >
+         <widget class="QTabWidget" name="stackedWidget" >
+          <property name="currentIndex" >
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="pageStream" >
+           <attribute name="title" >
+            <string>Filtered Stream</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_4" >
+            <item row="0" column="0" >
+             <widget class="QTextEdit" name="textStream" >
+              <property name="undoRedoEnabled" >
                <bool>false</bool>
               </property>
-              <property name="text" >
-               <string>&amp;Import Stream ...</string>
+              <property name="readOnly" >
+               <bool>true</bool>
               </property>
-              <property name="shortcut" >
-               <string>Alt+I</string>
+              <property name="acceptRichText" >
+               <bool>false</bool>
+              </property>
+              <property name="textInteractionFlags" >
+               <set>Qt::TextBrowserInteraction</set>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QPushButton" name="buttonExport" >
-              <property name="enabled" >
-               <bool>false</bool>
-              </property>
-              <property name="text" >
-               <string>&amp;Export Stream ...</string>
-              </property>
-              <property name="shortcut" >
-               <string>Alt+E</string>
-              </property>
-             </widget>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="pageHexView" >
+           <attribute name="title" >
+            <string>Binary Stream</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_2" >
+            <item row="0" column="0" >
+             <widget class="QHexView" native="1" name="hexView" />
             </item>
-            <item>
-             <spacer>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="pageView" >
+           <attribute name="title" >
+            <string>Page Preview</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout" >
+            <item row="0" column="0" colspan="2" >
+             <widget class="PodofoView" name="podofoView" />
+            </item>
+            <item row="1" column="0" >
+             <spacer name="horizontalSpacer" >
               <property name="orientation" >
                <enum>Qt::Horizontal</enum>
               </property>
-              <property name="sizeType" >
-               <enum>QSizePolicy::Expanding</enum>
-              </property>
               <property name="sizeHint" stdset="0" >
                <size>
-                <width>241</width>
-                <height>21</height>
+                <width>384</width>
+                <height>20</height>
                </size>
               </property>
              </spacer>
             </item>
+            <item row="1" column="1" >
+             <widget class="QPushButton" name="reloadButton" >
+              <property name="text" >
+               <string>Reload</string>
+              </property>
+             </widget>
+            </item>
            </layout>
+          </widget>
+         </widget>
+        </item>
+        <item row="3" column="0" >
+         <layout class="QHBoxLayout" >
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <property name="margin" >
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="buttonImport" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>&amp;Import Stream ...</string>
+            </property>
+            <property name="shortcut" >
+             <string>Alt+I</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="buttonExport" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>&amp;Export Stream ...</string>
+            </property>
+            <property name="shortcut" >
+             <string>Alt+E</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType" >
+             <enum>QSizePolicy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0" >
+             <size>
+              <width>241</width>
+              <height>21</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkEditable" >
+            <property name="text" >
+             <string>Editable</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="commitButton" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="text" >
+             <string>Commit</string>
+            </property>
+           </widget>
           </item>
          </layout>
-        </widget>
-       </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
    </layout>
+   <zorder>splitter</zorder>
   </widget>
   <widget class="QToolBar" name="toolBar" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>24</y>
-     <width>758</width>
-     <height>34</height>
-    </rect>
-   </property>
    <property name="orientation" >
     <enum>Qt::Horizontal</enum>
    </property>
@@ -227,8 +240,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>758</width>
-     <height>24</height>
+     <width>736</width>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="helpMenu" >
@@ -599,6 +612,11 @@
    <header>hexwidget/QHexView.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>PodofoView</class>
+   <extends>QGraphicsView</extends>
+   <header>podofoview.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="podofobrowserrsrc.qrc" />
@@ -729,6 +747,22 @@
     <hint type="destinationlabel" >
      <x>20</x>
      <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkEditable</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>commitButton</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>765</x>
+     <y>608</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>822</x>
+     <y>609</y>
     </hint>
    </hints>
   </connection>

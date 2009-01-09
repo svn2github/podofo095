@@ -10,6 +10,7 @@ QT4_WRAP_UI(podofobrowser_UIC_HEADERS
 SET(podofobrowser_MOC_HEADERS
 	backgroundloader.h
 	podofobrowser.h
+	podofoview.h
 	pdfobjectmodel.h
 	hexwidget/QHexView.h
 	)
@@ -33,6 +34,7 @@ ADD_EXECUTABLE(podofobrowser
 	podofoutil.cpp
 	pdfobjectmodel.cpp
 	podofobrowser.cpp
+	podofoview.cpp
 	main.cpp
 	hexwidget/QHexView.cpp
 	${podofobrowser_QRC_SRCS}
@@ -52,6 +54,7 @@ ELSE(NOT WIN32)
 ENDIF(NOT WIN32)
 
 TARGET_LINK_LIBRARIES(podofobrowser
+	viewer
 	${QT_LIBRARIES}
 	${LIBPODOFO_LIB}
 	${LIBFREETYPE_LIB}
@@ -81,6 +84,7 @@ INCLUDE_DIRECTORIES(
 	${PODOFO_INCLUDES}
 	${CMAKE_CURRENT_SOURCE_DIR} 
 	${CMAKE_CURRENT_BINARY_DIR}
+	${VIEWER_DIR}
 	)
 
 INSTALL(TARGETS podofobrowser

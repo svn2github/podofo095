@@ -17,3 +17,36 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#ifndef TEXTMAKER_H
+#define TEXTMAKER_H
+
+#include "viewer/core.h"
+
+class FontFace;
+
+class TextMaker : public GraphicItemMakerBase
+{
+	QStringList supportedOps;
+	QStringList textShowOps;
+	QStringList textStateOps;
+	
+	void manipTs(PdfContentIterator csIterator, GraphicState& gState);
+	
+	bool makeFace(PdfContentIterator csIterator,  GraphicState& gState);
+	QMap<PoDoFo::PdfName , FontFace* > faces;
+
+	void drawString(PdfContentIterator csIterator,  GraphicState& gState);
+	
+	public:
+		TextMaker();
+		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+		bool support(const QString& op) const ;
+		
+		void reset();
+		
+
+};
+
+
+#endif // TEXTMAKER_H
