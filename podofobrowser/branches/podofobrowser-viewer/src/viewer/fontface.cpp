@@ -310,7 +310,7 @@ void SimpleFTFace::makePath ( FT_Face face, unsigned int charcode, unsigned int 
 
 void SimpleFTFace::drawGlyph ( unsigned int charcode, GraphicState& gState )
 {
-// 	qDebug()<<"SimpleFTFace::drawGlyph========"<<charcode<<"==================";
+//        qDebug()<<"SimpleFTFace::drawGlyph========"<<charcode<<"==================";
 // 	gState.dump();
 	if ( !cmap.contains ( charcode ) )
 	{
@@ -341,32 +341,21 @@ void SimpleFTFace::drawGlyph ( unsigned int charcode, GraphicState& gState )
 		gi->setBrush ( Qt::NoBrush );
 	}
 
-	QMatrix gToT ( 1.0/1000.0, 0,0, -1.0/1000.0 ,0,0 );
+
+
+        QMatrix gToT ( 1.0/1000.0, 0,0, -1.0/1000.0 , 0 ,0 );
 	QMatrix m (	gState.text.Tfs * ( gState.text.Th / 100.0 ) , 0 ,
 			0 ,  gState.text.Tfs,
-  			 0, gState.text.Trise );
+                         -gState.text.Tj /1000.0, gState.text.Trise );
 	QTransform t ( gToT * m * gState.text.Tm * gState.cm );
 	gi->setZValue ( gState.getZIndex() );
 	gState.scene->addItem ( gi );
 	gState.itemList->append ( gi );
 	gi->setTransform ( t );
-	
-// 	qDebug()<<"Glyph added to scene - "<< gState.text.Tmode <<"\n" << gState.pen << "\n"<<gState.brush << "\n"<<t;
-// 	gState.text.dump();
 
-	double tx( ( ( (widths[charcode]/1000.0)  -  (gState.text.Tj/1000.0)) * gState.text.Tfs + gState.text.Tc + gState.text.Tw ) * (gState.text.Th/100.0));
-	double ty(0);
-	
-// 	qDebug()<<"tx:"<<tx<<"W:"<<widths[charcode];
-// 	QPointF ttmp(tx,ty);
-// 	QPointF tv(ttmp * gToT);
-// 	tx = tv.x();
-// 	ty = tv.y();
-// 	qDebug()<<ttmp;
-// 	qDebug()<<tv;
-// 	qDebug()<<"W:"<<widths[charcode]<<"tx:"<<tx<<"Tc:"<<gState.text.Tc;
-	gState.text.Tm.translate ( tx , ty );
-	gState.text.Tj = 0;
+        double tx( ( ( (widths[charcode]/1000.0)  -  (gState.text.Tj/1000.0)) * gState.text.Tfs + gState.text.Tc + gState.text.Tw ) * (gState.text.Th/100.0));
+        double ty(0);
+        gState.text.Tm.translate ( tx , ty );
 }
 
 Type3Collection::Type3Collection ( PoDoFo::PdfObject * pFont, GraphicState& gState )
@@ -410,6 +399,7 @@ Type3Collection::Type3Collection ( PoDoFo::PdfObject * pFont, GraphicState& gSta
 					if ( curObject->IsName() )
 					{
 						reverseCodes[curObject->GetName()] = curOfset;
+                                                qDebug()<<"E"<<  QString::fromStdString( curObject->GetName().GetEscapedName() ) << curOfset;
 						++curOfset;
 					}
 					else if ( curObject->IsNumber() )
@@ -509,9 +499,9 @@ void Type3Collection::drawGlyph(unsigned int charcode, GraphicState & gState)
 	
 	QByteArray& stream = m_collection[charcode];
 	
-	qDebug()<<"*************************************";
-	qDebug()<<stream;
-	qDebug()<<"*************************************";
+//	qDebug()<<"*************************************";
+//	qDebug()<<stream;
+//	qDebug()<<"*************************************";
 	PoDoFo::PdfContentsTokenizer * tokenizer = new PoDoFo::PdfContentsTokenizer ( stream.data(), stream.length() );
 
 	const char*      pszToken = NULL;
@@ -542,7 +532,8 @@ void Type3Collection::drawGlyph(unsigned int charcode, GraphicState & gState)
 	}
 
 	GraphicState nState = gState;
-	gState.cm = gState.cm * gState.text.Tm;
+        nState.cm = gState.cm * gState.text.Tm;
+        nState.cm.scale(nState.text.Tfs / 1000.0, nState.text.Tfs / 1000.0);
 	
 	delete tokenizer;
 // 	qDebug() <<"Content Stream tokenized";

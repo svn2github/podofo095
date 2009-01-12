@@ -448,7 +448,7 @@ void PoDoFoBrowser::treeSelectionChanged ( const QModelIndex & current, const QM
 	// TODO: hex editor
 	QString displayInfo;
 	const bool isBinary = std::find ( pBuf, pBuf+lLen, 0 ) != pBuf+lLen;
-	if ( !isBinary )
+//	if ( !isBinary )
 	{
 		qDebug() << "Not Binary";
 		// TODO FIXME XXX AUUGH! Encoding assumption like nothing ever
@@ -459,9 +459,10 @@ void PoDoFoBrowser::treeSelectionChanged ( const QModelIndex & current, const QM
 			textStream->setEnabled ( true );
 			textStream->setText ( data );
 			displayInfo = tr ( "displayed in full" );
-			stackedWidget->setCurrentWidget ( pageStream );
+                        if(!isBinary)
+                            stackedWidget->setCurrentWidget ( pageStream );
 	}
-	else
+//	else
 	{
 		qDebug() << "Binary";
 		// Read the whole stream into memory and point the hex editor at it.
@@ -473,7 +474,8 @@ void PoDoFoBrowser::treeSelectionChanged ( const QModelIndex & current, const QM
 		// and tell the hex editor to display the new data
 		hexView->setData ( m_pByteArrayIO, m_pByteArrayIO->size() );
 		displayInfo = tr ( "contains binary data" );
-		stackedWidget->setCurrentWidget ( pageHexView );
+//                if(isBinary)
+//                    stackedWidget->setCurrentWidget ( pageHexView );
 	}
 	free ( pBuf );
 
@@ -1120,49 +1122,25 @@ void PoDoFoBrowser::slotSetStreamEditable(bool e)
 void PoDoFoBrowser::slotCommitStream()
 {
 	QModelIndex idx = GetSelectedItem();
-	if (!idx.isValid()) return; // shouldn't happen
+        if (!idx.isValid())
+        {
+            qDebug()<<"slotCommitStream Invalid ModelIndex";
+            return; // shouldn't happen
+        }
+
 
 	PdfObjectModel * const model = static_cast<PdfObjectModel*>(listObjects->model());
 
-    // TODO: if the stream is a file stream, convert it to a mem
-    // stream while retaining all dictionary attributes.
 	const PdfObject * obj = model->GetObjectForIndex(idx);
 	if (!obj->HasStream())
+        {
+             qDebug()<<"slotCommitStream object has no stream";
 		return;
-    // dodgy!
-	
+            }
+
 	QByteArray cs(m_codecForStream->fromUnicode(textStream->toPlainText()));
-	
 	PdfStream * stream = const_cast<PdfObject*>(obj)->GetStream();
 	stream->Set(cs.data(), cs.size());
-
-	
-
-//     // Load the stream in streamChunkSize byte chunks.
-// 	static const qint64 streamChunkSize=1024*64;
-// 	char* pBuf = static_cast<char*>(malloc( streamChunkSize*sizeof(char) ));
-// 
-// 	qint64 bytesRead = 0;
-// 	try {
-// 	// Clear the stream and begin appending, with all data being encoded according
-// 	// to the current stream dictionary's filters.
-// 		stream->BeginAppend( PdfFilterFactory::CreateFilterList(obj), true );
-// 		do
-// 		{
-// 			bytesRead = f.read(pBuf, streamChunkSize);
-// 			assert(bytesRead != -1); // error not handled properly
-// 			if (bytesRead > 0)
-// 				stream->Append(pBuf, bytesRead);
-// 		}
-// 		while (bytesRead > 0);
-// 		stream->EndAppend();
-// 	} catch (PdfError& e) {
-// 		free(pBuf);
-// 		podofoError( e );
-// 		return;
-// 	}
-// 	free(pBuf);
-
 	statusBar()->showMessage( tr("Stream Committed"), 2000 );
 
 }
