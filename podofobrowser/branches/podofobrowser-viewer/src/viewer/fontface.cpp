@@ -136,6 +136,7 @@ void SimpleFTFace::makeType1 ( PoDoFo::PdfObject * pFont )
 		}
 
 		QMap<int, PoDoFo::PdfName> customMap;
+                bool hasSpace(false);
 
 		PoDoFo::PdfName WinAnsi ( "WinAnsiEncoding" );
 		PoDoFo::PdfName MacRoman ( "MacRomanEncoding" );
@@ -209,6 +210,11 @@ void SimpleFTFace::makeType1 ( PoDoFo::PdfObject * pFont )
 								if ( curObject->IsName() )
 								{
 									customMap[curOfset] = curObject->GetName();
+                                                                        if(curObject->GetName() == PoDoFo::PdfName("space"))
+                                                                        {
+                                                                            space = curOfset;
+                                                                            hasSpace = true;
+                                                                        }
 // 									qDebug()<<"D"<<curOfset<<  curObject->GetName().GetEscapedName().c_str();
 									++curOfset;
 								}
@@ -244,7 +250,7 @@ void SimpleFTFace::makeType1 ( PoDoFo::PdfObject * pFont )
 		FT_UInt cc =  FT_Get_First_Char ( face, &gIndex );
 		while ( gIndex )
 		{
-			tmpMap[cc] = gIndex;
+                        tmpMap[cc] = gIndex;
 // 			qDebug()<<"*Encode"<<cc<<gIndex;
 			cc = FT_Get_Next_Char ( face, cc, &gIndex );
 		}
@@ -263,7 +269,10 @@ void SimpleFTFace::makeType1 ( PoDoFo::PdfObject * pFont )
 		{
 			makePath(face, cc, tmpMap[cc]);
 		}
+                if(!hasSpace)
+                    space = 32;
 	}
+
 	qDebug()<<"Face Done:"<<face->family_name << face->style_name<<cmap.count();
 	FT_Done_Face (face);
 }
@@ -318,6 +327,7 @@ void SimpleFTFace::drawGlyph ( unsigned int charcode, GraphicState& gState )
 		return;
 	}
 
+        bool ws(charcode == space);
 	QGraphicsPathItem *gi ( new QGraphicsPathItem );
 	gi->setPath ( cmap[charcode] );
 	if ( gState.text.Tmode == 0 )
@@ -346,14 +356,14 @@ void SimpleFTFace::drawGlyph ( unsigned int charcode, GraphicState& gState )
         QMatrix gToT ( 1.0/1000.0, 0,0, -1.0/1000.0 , 0 ,0 );
 	QMatrix m (	gState.text.Tfs * ( gState.text.Th / 100.0 ) , 0 ,
 			0 ,  gState.text.Tfs,
-                         -gState.text.Tj /1000.0, gState.text.Trise );
-	QTransform t ( gToT * m * gState.text.Tm * gState.cm );
+                        -gState.text.Tj /1000.0, gState.text.Trise );
+        QTransform t ( gToT * m * gState.text.Tm * gState.cm * gState.xm);
 	gi->setZValue ( gState.getZIndex() );
 	gState.scene->addItem ( gi );
 	gState.itemList->append ( gi );
 	gi->setTransform ( t );
 
-        double tx( ( ( (widths[charcode]/1000.0)  -  (gState.text.Tj/1000.0)) * gState.text.Tfs + gState.text.Tc + gState.text.Tw ) * (gState.text.Th/100.0));
+        double tx( ( ( (widths[charcode]/1000.0)  -  (gState.text.Tj/1000.0)) * gState.text.Tfs + gState.text.Tc + (ws ? gState.text.Tw : 0.0) ) * (gState.text.Th/100.0));
         double ty(0);
         gState.text.Tm.translate ( tx , ty );
 }
@@ -377,6 +387,13 @@ Type3Collection::Type3Collection ( PoDoFo::PdfObject * pFont, GraphicState& gSta
 										fmArray[5].GetReal() );
 		}
 	}
+
+        // resources dictionary
+        PoDoFo::PdfName resourcesName ( "Resources" );
+        if ( pFont->GetDictionary().HasKey ( resourcesName ) )
+        {
+                m_resources =  pFont->GetDictionary().GetKey(resourcesName);
+        }
 	
 	// encoding vector
 	QMap<PoDoFo::PdfName, unsigned int> reverseCodes;
@@ -531,10 +548,11 @@ void Type3Collection::drawGlyph(unsigned int charcode, GraphicState & gState)
 		}
 	}
 
-	GraphicState nState = gState;
+        GraphicState nState ( gState );
         nState.cm = gState.cm * gState.text.Tm;
         nState.cm.scale(nState.text.Tfs / 1000.0, nState.text.Tfs / 1000.0);
-	
+        nState.resource = m_resources;
+
 	delete tokenizer;
 // 	qDebug() <<"Content Stream tokenized";
 	

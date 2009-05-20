@@ -26,6 +26,7 @@
 #include <QMatrix>
 #include <QPen>
 #include <QDebug>
+#include <QUuid>
 
 #include <podofo/podofo.h>
 
@@ -41,17 +42,20 @@ struct GraphicState
 		pen = other.pen;
 		brush = other.brush;
 		cm = other.cm;
+                xm = other.xm;
 		text = other.text;
 		scene = other.scene;
 		itemList = other.itemList;
 		document = other.document;
 		page = other.page;
-		xobject = other.xobject;
+                resource = other.resource;
 	}
 	
 	QPen pen;
 	QBrush brush;
-	QMatrix cm;	
+        QMatrix cm;
+        // basicaly xobject matrix.
+        QMatrix xm;
 	
 	struct Text
 	{
@@ -112,7 +116,8 @@ struct GraphicState
 	// PDF context
 	PoDoFo::PdfMemDocument * document;
 	PoDoFo::PdfPage * page;
-	PoDoFo::PdfXObject * xobject;
+        // A local resources dictionary for objects such as XObjects or Type3 fonts.
+        PoDoFo::PdfObject * resource;
 	PoDoFo::PdfObject * getResource(const PoDoFo::PdfName& resname, const PoDoFo::PdfName& dictname);
 // 	PoDoFo::PdfVariant * getValue(const QString& key);
 	
@@ -138,5 +143,31 @@ struct GraphicState
 	
 };
 
+class GraphicStateStack : private QList<GraphicState>
+{
+    QMap<int, QUuid> m_keys;
+    GraphicStateStack();
+    ~GraphicStateStack();
+    static GraphicStateStack * instance;
+public:
+    static GraphicStateStack * getInstance();
+
+    void stack(const GraphicState& gs);
+    GraphicState unstack();
+
+    // locking prevents a state to be poped
+
+    // lock to last appended state and
+    // return a key to unlock it.
+    QUuid lock();
+    // append a state then lock it;
+    QUuid lock(const GraphicState& gs);
+
+    // unlock a state, return true if the stack is such
+    // that you will be able to pop the state associated to uid.
+    // what can happen only if there’s no other locked state
+    // up on the stack.
+    bool unlock(const QUuid& uid);
+};
 
 #endif //  VIEWER_GRAPHICSTATE_H

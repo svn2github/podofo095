@@ -48,7 +48,8 @@ class Type3Collection : public FontFace
 	QMatrix m_fontMatrix; // FontMatrix
 	QMap<unsigned int, QByteArray> m_collection; // mapped Charprocs
 	QMap<unsigned int, double> m_widths; // Widths
-	
+        PoDoFo::PdfObject * m_resources;
+
 	public:
 		Type3Collection(PoDoFo::PdfObject * pFont, GraphicState& gState);
 		~Type3Collection(){}
@@ -71,6 +72,7 @@ class SimpleFTFace : public FontFace
 	
 	QMap<unsigned int, QPainterPath> cmap; // charcode, outlines
 	QMap<unsigned int, double> widths;// xadvances
+        unsigned int space;
 	
 	void makeType1(PoDoFo::PdfObject * pFont);
 	void makeTrueType(PoDoFo::PdfObject * pFont);

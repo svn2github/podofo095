@@ -163,7 +163,7 @@ PdfContentIterator PathItemMaker::item ( PdfContentIterator csIterator,  Graphic
 		}
 		else // path must be finished!
 		{
-			gState.itemList->append ( gState.scene->addPath ( p * gState.cm, gState.pen, gState.brush ) );
+                        gState.itemList->append ( gState.scene->addPath ( p * gState.cm * gState.xm, gState.pen, gState.brush ) );
 			gState.itemList->last()->setZValue( gState.getZIndex() );
 			break;
 		}

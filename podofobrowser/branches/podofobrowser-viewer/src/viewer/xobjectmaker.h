@@ -18,30 +18,22 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "graphicstackmaker.h"
+#ifndef XOBJECTMAKER_H
+#define XOBJECTMAKER_H
 
-GraphicStackMaker::GraphicStackMaker()
+#include "viewer/core.h"
+
+class XObjectMaker : public GraphicItemMakerBase
 {
-	supportedOps << QString::fromAscii ( "q" )
-			<< QString::fromAscii ( "Q" );
-}
+    QStringList supportedOps;
 
-bool GraphicStackMaker::support(const QString & op) const
-{
-	return supportedOps.contains ( op );
-}
+    QList<PoDoFo::PdfObject*> xoObj;
+    PdfContentIterator form(PdfContentIterator csIterator,  GraphicState& gState);
+    PdfContentIterator image(PdfContentIterator csIterator,  GraphicState& gState);
+public:
+    XObjectMaker();
+    PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+    bool support(const QString& op) const ;
+};
 
-PdfContentIterator GraphicStackMaker::item(PdfContentIterator csIterator, GraphicState & gState)
-{
-// 	qDebug()<<"GraphicStackMaker"<<csIterator->key;
-	if(csIterator->key == QString::fromAscii("q"))
-	{
-		GraphicStateStack::getInstance()->stack( gState );
-	}
-	else if(csIterator->key == QString::fromAscii("Q"))
-	{
-		gState = GraphicStateStack::getInstance()->unstack();
-	}
-	return ++csIterator;
-}
-
+#endif // XOBJECTMAKER_H

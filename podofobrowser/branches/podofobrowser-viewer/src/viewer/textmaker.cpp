@@ -372,17 +372,17 @@ void TextMaker::drawString ( PdfContentIterator csIterator ,  GraphicState& gSta
                     qDebug() <<"Unable to get a string (TJ)";
                     return;
                 }
-                QString dString;
-                foreach( unsigned int c, codeList )
-                {
-                    dString += QChar(40);
-                    dString += QString::number(c);
-                    dString +=QChar(0x2044);
-                    dString +=QChar(c);
-                    dString +=QChar(41);
-                }
-
-                qDebug()<<gState.text.Tj<<dString;
+//                QString dString;
+//                foreach( unsigned int c, codeList )
+//                {
+//                    dString += QChar(40);
+//                    dString += QString::number(c);
+//                    dString +=QChar(0x2044);
+//                    dString +=QChar(c);
+//                    dString +=QChar(41);
+//                }
+//
+//                qDebug()<<gState.text.Tj<<dString;
                 foreach ( unsigned int c, codeList )
                 {
                     font->drawGlyph ( c , gState );

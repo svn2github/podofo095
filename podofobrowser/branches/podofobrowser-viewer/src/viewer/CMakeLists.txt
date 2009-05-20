@@ -14,6 +14,7 @@ pathitemmaker.cpp
 simplecolormaker.cpp
 simpletransformmaker.cpp
 textmaker.cpp
+xobjectmaker.cpp
 )
 
 ADD_LIBRARY(viewer STATIC ${VIEWER_SRCS})

@@ -175,7 +175,7 @@ void PodofoView::showPage(PoDoFo::PdfPage * page, PoDoFo::PdfMemDocument* doc)
 	
 	gState.document = m_document;
 	gState.page = page;
-	gState.xobject = 0;
+        gState.resource = 0;
 	
 	gState.scene = scene();
 	gState.itemList = &m_itemList;

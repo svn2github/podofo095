@@ -26,6 +26,7 @@
 #include "viewer/pathitemmaker.h"
 #include "viewer/textmaker.h"
 #include "viewer/graphicstatemanip.h"
+#include "viewer/xobjectmaker.h"
 
 
 Dispatcher * Dispatcher::instance = 0;
@@ -39,6 +40,7 @@ Dispatcher::Dispatcher()
 	m_itemMakers [QString::fromUtf8("GraphicStackMaker")] = ( new GraphicStackMaker );
 	m_itemMakers [QString::fromUtf8("TextMaker")] = ( new TextMaker );
 	m_itemMakers [QString::fromUtf8("GraphicStateManip")] = ( new GraphicStateManip );
+        m_itemMakers [QString::fromUtf8("XObjectMaker")] = ( new XObjectMaker );
 	// (...)
 	// last one just passes, kind of "default" clause
 // 	m_itemMakers [QString::fromUtf8("NoOpMaker")] = ( new NoOpMaker );

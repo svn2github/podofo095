@@ -25,12 +25,11 @@
 
 class GraphicStackMaker :  public GraphicItemMakerBase
 {
-	QStringList supportedOps;
-	QList<GraphicState> m_stack;
+    QStringList supportedOps;
 	public:
-		GraphicStackMaker();
-		PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
-		bool support(const QString& op) const ;
+    GraphicStackMaker();
+    PdfContentIterator item(PdfContentIterator csIterator,  GraphicState& gState);
+    bool support(const QString& op) const ;
 };
 
 
